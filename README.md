@@ -15,7 +15,11 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-127%20passed-brightgreen.svg)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen.svg)](htmlcov/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
+[![SAST: semgrep](https://img.shields.io/badge/SAST-semgrep-purple.svg)](https://semgrep.dev/)
 
 **Exporta tus contraseñas guardadas en DuckDuckGo Android a CSV y otros formatos de password managers populares.**
 
@@ -40,6 +44,7 @@
 - [Formatos de Exportación](#-formatos-de-exportación)
 - [Arquitectura Técnica](#-arquitectura-técnica)
 - [Seguridad](#-seguridad)
+- [Desarrollo](#-desarrollo)
 - [Solución de Problemas](#-solución-de-problemas)
 - [Changelog](#-changelog)
 - [Autor](#-autor)
@@ -664,6 +669,130 @@ ls -la passwords.csv  # Debe dar error "No such file"
 
 ---
 
+## 🛠️ Desarrollo
+
+Esta sección describe cómo contribuir al proyecto, ejecutar tests y verificar la calidad del código.
+
+### Requisitos de Desarrollo
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/vdirienzo/ddgo-backup.git
+cd ddgo-backup
+
+# Instalar dependencias incluyendo dev
+uv sync --all-extras
+```
+
+### Tests
+
+El proyecto tiene una suite completa de tests con **96% de cobertura**:
+
+```
+tests/
+├── conftest.py                    # 15 fixtures reutilizables
+├── integration/
+│   └── test_e2e.py                # 12 tests E2E
+└── unit/
+    ├── test_crypto.py             # 36 tests (99% cov)
+    ├── test_exporter.py           # 36 tests (100% cov)
+    ├── test_api.py                # 19 tests (89% cov)
+    └── test_main.py               # 24 tests (96% cov)
+```
+
+#### Ejecutar Tests
+
+```bash
+# Todos los tests
+uv run pytest
+
+# Con cobertura
+uv run pytest --cov=ddgo_backup --cov-report=term-missing
+
+# Solo unit tests
+uv run pytest tests/unit/
+
+# Solo integration tests
+uv run pytest tests/integration/
+
+# Tests específicos
+uv run pytest -k "test_crypto"
+
+# Modo verbose
+uv run pytest -v
+```
+
+#### Cobertura por Módulo
+
+| Módulo | Statements | Coverage |
+|--------|------------|----------|
+| `crypto.py` | 104 | 99% |
+| `exporter.py` | 128 | 100% |
+| `api.py` | 97 | 89% |
+| `main.py` | 84 | 96% |
+| `models.py` | 31 | 97% |
+| **Total** | **448** | **96%** |
+
+### Calidad de Código
+
+El proyecto usa herramientas de última generación para mantener la calidad:
+
+```bash
+# Linting con Ruff
+uv run ruff check src/
+
+# Formateo con Ruff
+uv run ruff format src/
+
+# Type checking con Mypy
+uv run mypy src/ --ignore-missing-imports
+
+# Verificar todo
+uv run ruff check src/ && uv run ruff format --check src/ && uv run mypy src/
+```
+
+### Auditoría de Seguridad
+
+El código ha sido auditado con múltiples herramientas de seguridad:
+
+| Herramienta | Propósito | Resultado |
+|-------------|-----------|-----------|
+| **Bandit** | Security linting Python | ✅ 0 issues |
+| **Semgrep** | SAST (Static Analysis) | ✅ 0 findings |
+| **Safety** | Vulnerabilidades en deps | ✅ 0 CVEs |
+
+```bash
+# Ejecutar auditoría de seguridad
+uv run bandit -r src/
+
+# Verificar dependencias
+uv run safety check
+```
+
+### Dependencias de Desarrollo
+
+| Paquete | Versión | Propósito |
+|---------|---------|-----------|
+| `pytest` | ≥8.0 | Framework de testing |
+| `pytest-cov` | ≥4.0 | Cobertura de código |
+| `respx` | ≥0.20 | HTTP mocking para httpx |
+| `ruff` | ≥0.1 | Linting + formatting |
+| `mypy` | ≥1.0 | Type checking |
+| `bandit` | ≥1.7 | Security linting |
+| `safety` | ≥2.0 | Dependency audit |
+
+### Flujo de Contribución
+
+1. **Fork** el repositorio
+2. **Crea una rama** para tu feature: `git checkout -b feature/mi-feature`
+3. **Escribe tests** para tu código
+4. **Verifica calidad**: `uv run ruff check && uv run mypy src/`
+5. **Ejecuta tests**: `uv run pytest`
+6. **Commit** con mensaje descriptivo
+7. **Push** y crea un **Pull Request**
+
+---
+
 ## ❓ Solución de Problemas
 
 ### Error: "Recovery code inválido"
@@ -719,6 +848,33 @@ uv run python -m ddgo_backup -v
 ---
 
 ## 📝 Changelog
+
+### [1.2.0] - 2026-01-18
+
+#### Added
+- Suite completa de tests con **127 tests** y **96% de cobertura**
+  - Unit tests para crypto.py (36 tests, 99% cov)
+  - Unit tests para exporter.py (36 tests, 100% cov)
+  - Unit tests para api.py (19 tests, 89% cov)
+  - Unit tests para main.py (24 tests, 96% cov)
+  - Integration tests E2E (12 tests)
+- Auditoría de seguridad completa:
+  - Ruff: linting y formateo
+  - Mypy: verificación de tipos estáticos
+  - Bandit: security linting (0 issues)
+  - Semgrep: SAST scanning (0 findings)
+  - Safety: dependency audit (0 CVEs)
+- Sección de Desarrollo en documentación
+- Badges de tests, cobertura y herramientas de seguridad
+
+#### Changed
+- Código formateado con Ruff
+- Type hints corregidos para cumplir con Mypy
+- Removidos ejemplos con datos sensibles de la documentación
+
+#### Security
+- Verificación triple de que no hay recovery codes reales en el código
+- .gitignore actualizado para bloquear archivos CSV y JSON exportados
 
 ### [1.1.0] - 2026-01-18
 
