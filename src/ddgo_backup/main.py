@@ -48,8 +48,6 @@ def get_recovery_code() -> str:
     print("=" * 60)
     print("\nPara exportar tus contraseñas necesitas tu Recovery Code.")
     print("Lo puedes encontrar en: DDG App → Settings → Sync & Backup")
-    print("\nEl código tiene este formato (JSON en Base64):")
-    print('  {"recovery":{"primary_key":"...", "user_id":"..."}}')
     print("")
     print("┌────────────────────────────────────────────────────────────┐")
     print("│  IMPORTANTE: El código del PDF viene en VARIAS LÍNEAS     │")
