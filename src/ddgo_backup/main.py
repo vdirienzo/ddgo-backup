@@ -52,7 +52,7 @@ def get_recovery_code() -> str:
     print('  {"recovery":{"primary_key":"...", "user_id":"..."}}')
     print("")
     print("┌" + "─" * 58 + "┐")
-    print("│  💡 IMPORTANTE: El código del PDF viene en VARIAS LÍNEAS  │")
+    print("│  IMPORTANTE: El código del PDF viene en VARIAS LÍNEAS     │")
     print("│                                                          │")
     print("│  1. Pega TODO el código (puede ser 3-4 líneas)           │")
     print("│  2. Presiona ENTER                                       │")

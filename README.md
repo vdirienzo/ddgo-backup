@@ -289,7 +289,7 @@ uv run python -m ddgo_backup
 Para exportar tus contraseñas necesitas tu Recovery Code.
 Lo puedes encontrar en: DDG App → Settings → Sync & Backup
 
-💡 IMPORTANTE: Si el código viene en varias líneas (como en el PDF),
+IMPORTANTE: Si el código viene en varias líneas (como en el PDF),
    pégalo todo y presiona ENTER dos veces cuando termines.
 
 Recovery Code (pega todo, luego ENTER vacío para continuar):
