@@ -55,3 +55,13 @@ python_version = "3.11"
 strict = false
 warn_return_any = true
 warn_unused_ignores = true
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.2",
+    "mypy>=1.19.1",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.13",
+    "safety>=3.7.0",
+]

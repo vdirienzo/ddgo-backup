@@ -105,7 +105,16 @@ Ejemplos:
     parser.add_argument(
         "-f",
         "--format",
-        choices=["csv", "json", "bitwarden", "1password", "protonpass", "nordpass", "roboform", "keeper"],
+        choices=[
+            "csv",
+            "json",
+            "bitwarden",
+            "1password",
+            "protonpass",
+            "nordpass",
+            "roboform",
+            "keeper",
+        ],
         default="csv",
         help="Formato de exportación (default: csv)",
     )

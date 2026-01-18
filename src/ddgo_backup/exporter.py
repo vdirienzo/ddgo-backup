@@ -45,14 +45,16 @@ def export_to_csv(
         writer.writeheader()
 
         for cred in credentials:
-            writer.writerow({
-                "name": cred.domain or "",
-                "url": cred.domain or "",
-                "username": cred.username or "",
-                "password": cred.password or "",
-                "notes": cred.notes or "",
-                "title": cred.title or "",
-            })
+            writer.writerow(
+                {
+                    "name": cred.domain or "",
+                    "url": cred.domain or "",
+                    "username": cred.username or "",
+                    "password": cred.password or "",
+                    "notes": cred.notes or "",
+                    "title": cred.title or "",
+                }
+            )
 
     logger.success(f"Exportadas {len(credentials)} credenciales a {output_path}")
     return output_path
@@ -188,14 +190,16 @@ def export_to_protonpass(
             if url and not url.startswith(("http://", "https://")):
                 url = f"https://{url}"
 
-            writer.writerow({
-                "name": cred.title or cred.domain or "",
-                "url": url,
-                "username": cred.username or "",
-                "password": cred.password or "",
-                "note": cred.notes or "",
-                "totp": "",  # DuckDuckGo no guarda TOTP
-            })
+            writer.writerow(
+                {
+                    "name": cred.title or cred.domain or "",
+                    "url": url,
+                    "username": cred.username or "",
+                    "password": cred.password or "",
+                    "note": cred.notes or "",
+                    "totp": "",  # DuckDuckGo no guarda TOTP
+                }
+            )
 
     logger.success(
         f"Exportadas {len(credentials)} credenciales en formato ProtonPass a {output_path}"
@@ -285,13 +289,15 @@ def export_to_nordpass(
             if url and not url.startswith(("http://", "https://")):
                 url = f"https://{url}"
 
-            writer.writerow({
-                "name": cred.title or cred.domain or "",
-                "url": url,
-                "username": cred.username or "",
-                "password": cred.password or "",
-                "note": cred.notes or "",
-            })
+            writer.writerow(
+                {
+                    "name": cred.title or cred.domain or "",
+                    "url": url,
+                    "username": cred.username or "",
+                    "password": cred.password or "",
+                    "note": cred.notes or "",
+                }
+            )
 
     logger.success(
         f"Exportadas {len(credentials)} credenciales en formato NordPass a {output_path}"
@@ -334,14 +340,16 @@ def export_to_roboform(
             if url and not url.startswith(("http://", "https://")):
                 url = f"https://{url}"
 
-            writer.writerow({
-                "Name": cred.title or cred.domain or "",
-                "Url": url,
-                "MatchUrl": url,  # RoboForm usa esto para matching
-                "Login": cred.username or "",
-                "Pwd": cred.password or "",
-                "Note": cred.notes or "",
-            })
+            writer.writerow(
+                {
+                    "Name": cred.title or cred.domain or "",
+                    "Url": url,
+                    "MatchUrl": url,  # RoboForm usa esto para matching
+                    "Login": cred.username or "",
+                    "Pwd": cred.password or "",
+                    "Note": cred.notes or "",
+                }
+            )
 
     logger.success(
         f"Exportadas {len(credentials)} credenciales en formato RoboForm a {output_path}"
@@ -384,14 +392,16 @@ def export_to_keeper(
             if url and not url.startswith(("http://", "https://")):
                 url = f"https://{url}"
 
-            writer.writerow({
-                "Folder": "DuckDuckGo Import",  # Carpeta por defecto
-                "Title": cred.title or cred.domain or "",
-                "Login": cred.username or "",
-                "Password": cred.password or "",
-                "Website Address": url,
-                "Notes": cred.notes or "",
-            })
+            writer.writerow(
+                {
+                    "Folder": "DuckDuckGo Import",  # Carpeta por defecto
+                    "Title": cred.title or cred.domain or "",
+                    "Login": cred.username or "",
+                    "Password": cred.password or "",
+                    "Website Address": url,
+                    "Notes": cred.notes or "",
+                }
+            )
 
     logger.success(
         f"Exportadas {len(credentials)} credenciales en formato Keeper a {output_path}"

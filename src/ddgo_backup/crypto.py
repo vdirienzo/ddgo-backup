@@ -136,13 +136,13 @@ def decode_recovery_code(recovery_code: str) -> tuple[str, str]:
     clean_code = recovery_code
 
     # Eliminar todos los caracteres de espacio en blanco (espacios, tabs, newlines, etc.)
-    clean_code = re.sub(r'\s+', '', clean_code)
+    clean_code = re.sub(r"\s+", "", clean_code)
 
     # Eliminar guiones (por si lo formatearon manualmente)
     clean_code = clean_code.replace("-", "")
 
     # Eliminar comillas que puedan haber quedado al copiar
-    clean_code = clean_code.replace('"', '').replace("'", "")
+    clean_code = clean_code.replace('"', "").replace("'", "")
 
     # Intentar decodificar Base64
     try:

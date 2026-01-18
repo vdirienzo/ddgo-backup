@@ -32,7 +32,9 @@ class SyncClient:
     devices: list[Device] = field(default_factory=list)
     _http: httpx.Client = field(default_factory=lambda: httpx.Client(timeout=30.0))
 
-    def login(self, device_id: str = "backup-tool", device_name: str = "DDG Backup") -> bool:
+    def login(
+        self, device_id: str = "backup-tool", device_name: str = "DDG Backup"
+    ) -> bool:
         """
         Autentica con el servidor de sync.
 
@@ -155,16 +157,20 @@ class SyncClient:
 
     def _decrypt_credential(self, entry: dict) -> DecryptedCredential | None:
         """Descifra una entrada de credencial individual."""
+
         # TODOS los campos vienen cifrados desde el servidor
         # Función helper para descifrar un campo
         def decrypt_field(field_name: str) -> str:
-            value = entry.get(field_name, "")
+            value: str = entry.get(field_name, "") or ""
             if not value:
                 return ""
+            # self.secret_key ya fue verificado en fetch_credentials (línea 115)
+            if self.secret_key is None:
+                return str(value)
             try:
                 return decrypt_data(value, self.secret_key)
             except Exception:
-                return value  # Retornar original si falla
+                return str(value)  # Retornar original si falla
 
         # Descifrar todos los campos
         domain = decrypt_field("domain")
