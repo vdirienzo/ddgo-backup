@@ -1,13 +1,13 @@
 """
-test_api.py - Tests unitarios para SyncClient API
+test_api.py - Unit tests for SyncClient API
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 
-Tests para:
-- login(): autenticación exitosa y fallida
-- fetch_credentials(): obtención y descifrado de credenciales
-- _decrypt_credential(): descifrado de credenciales individuales
-- Manejo de errores HTTP
+Tests for:
+- login(): successful and failed authentication
+- fetch_credentials(): fetching and decrypting credentials
+- _decrypt_credential(): decrypting individual credentials
+- HTTP error handling
 """
 
 import base64
@@ -26,7 +26,7 @@ from ddgo_backup.crypto import LoginKeys
 
 @pytest.fixture
 def login_keys(test_primary_key_b64: str) -> LoginKeys:
-    """LoginKeys de prueba derivadas de primary key."""
+    """Test LoginKeys derived from primary key."""
     from ddgo_backup.crypto import prepare_for_login
 
     return prepare_for_login(test_primary_key_b64)
@@ -34,7 +34,7 @@ def login_keys(test_primary_key_b64: str) -> LoginKeys:
 
 @pytest.fixture
 def sync_client(test_user_id: str, login_keys: LoginKeys) -> SyncClient:
-    """Cliente SyncClient para tests."""
+    """SyncClient for tests."""
     return SyncClient(user_id=test_user_id, login_keys=login_keys)
 
 
@@ -47,7 +47,7 @@ def sync_client(test_user_id: str, login_keys: LoginKeys) -> SyncClient:
 def test_login_success(
     sync_client: SyncClient, mock_login_response: dict, test_secret_key: bytes
 ):
-    """Test login exitoso con credenciales válidas."""
+    """Test successful login with valid credentials."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
@@ -67,33 +67,33 @@ def test_login_success(
 
 @respx.mock
 def test_login_invalid_credentials(sync_client: SyncClient):
-    """Test login con credenciales inválidas (401)."""
+    """Test login with invalid credentials (401)."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(401, json={"error": "Unauthorized"})
     )
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Credenciales inválidas"):
+    with pytest.raises(ValueError, match="Invalid credentials"):
         sync_client.login()
 
 
 @respx.mock
 def test_login_server_error(sync_client: SyncClient):
-    """Test login con error del servidor (500)."""
+    """Test login with server error (500)."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(500, json={"error": "Internal Server Error"})
     )
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Error de login: 500"):
+    with pytest.raises(ValueError, match="Login error: 500"):
         sync_client.login()
 
 
 @respx.mock
 def test_login_incomplete_response_no_token(sync_client: SyncClient):
-    """Test login con respuesta incompleta (sin token)."""
+    """Test login with incomplete response (no token)."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(
@@ -106,13 +106,13 @@ def test_login_incomplete_response_no_token(sync_client: SyncClient):
     )
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Respuesta de login incompleta"):
+    with pytest.raises(ValueError, match="Incomplete login response"):
         sync_client.login()
 
 
 @respx.mock
 def test_login_incomplete_response_no_protected_key(sync_client: SyncClient):
-    """Test login con respuesta incompleta (sin protected_encryption_key)."""
+    """Test login with incomplete response (no protected_encryption_key)."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(
@@ -125,7 +125,7 @@ def test_login_incomplete_response_no_protected_key(sync_client: SyncClient):
     )
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Respuesta de login incompleta"):
+    with pytest.raises(ValueError, match="Incomplete login response"):
         sync_client.login()
 
 
@@ -133,7 +133,7 @@ def test_login_incomplete_response_no_protected_key(sync_client: SyncClient):
 def test_login_sends_correct_payload(
     sync_client: SyncClient, mock_login_response: dict
 ):
-    """Test que login envía el payload correcto en Base64."""
+    """Test that login sends correct Base64-encoded payload."""
     # Arrange
     route = respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
@@ -147,7 +147,7 @@ def test_login_sends_correct_payload(
     request = route.calls.last.request
     payload = request.content
 
-    # Verificar que el payload es JSON y contiene los campos esperados
+    # Verify payload is JSON and contains expected fields
     import json
 
     data = json.loads(payload)
@@ -156,7 +156,7 @@ def test_login_sends_correct_payload(
     assert "device_id" in data
     assert data["device_id"] == "my-device"
 
-    # Verificar que device_name está en Base64
+    # Verify device_name is Base64 encoded
     assert "device_name" in data
     decoded_name = base64.b64decode(data["device_name"]).decode()
     assert decoded_name == "My Device"
@@ -174,13 +174,13 @@ def test_fetch_credentials_success(
     mock_credentials_response: dict,
     test_secret_key: bytes,
 ):
-    """Test fetch_credentials exitoso con descifrado de credenciales."""
-    # Arrange - Simular login previo
+    """Test successful fetch_credentials with credential decryption."""
+    # Arrange - Simulate previous login
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
     )
     sync_client.login()
-    sync_client.secret_key = test_secret_key  # Usar secret key conocida para tests
+    sync_client.secret_key = test_secret_key  # Use known secret key for tests
 
     # Mock fetch credentials
     respx.get(f"{SYNC_API_BASE}/sync/credentials").mock(
@@ -192,18 +192,18 @@ def test_fetch_credentials_success(
 
     # Assert
     assert len(credentials) > 0
-    # Verificar que las credenciales tienen los campos esperados
+    # Verify credentials have expected fields
     for cred in credentials:
         assert cred.domain
-        assert cred.username or cred.password  # Al menos uno debe existir
+        assert cred.username or cred.password  # At least one must exist
 
 
 def test_fetch_credentials_without_login(sync_client: SyncClient):
-    """Test fetch_credentials sin hacer login primero."""
-    # Arrange - No hacer login
+    """Test fetch_credentials without logging in first."""
+    # Arrange - Don't login
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Debes hacer login primero"):
+    with pytest.raises(ValueError, match="You must login first"):
         sync_client.fetch_credentials()
 
 
@@ -213,21 +213,21 @@ def test_fetch_credentials_http_error(
     mock_login_response: dict,
     test_secret_key: bytes,
 ):
-    """Test fetch_credentials con error HTTP."""
-    # Arrange - Login exitoso
+    """Test fetch_credentials with HTTP error."""
+    # Arrange - Successful login
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
     )
     sync_client.login()
     sync_client.secret_key = test_secret_key
 
-    # Mock fetch con error
+    # Mock fetch with error
     respx.get(f"{SYNC_API_BASE}/sync/credentials").mock(
         return_value=httpx.Response(500, json={"error": "Internal Error"})
     )
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Error al obtener credenciales: 500"):
+    with pytest.raises(ValueError, match="Error fetching credentials: 500"):
         sync_client.fetch_credentials()
 
 
@@ -238,7 +238,7 @@ def test_fetch_credentials_sends_authorization_header(
     mock_credentials_response: dict,
     test_secret_key: bytes,
 ):
-    """Test que fetch_credentials envía el header Authorization correcto."""
+    """Test that fetch_credentials sends correct Authorization header."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
@@ -267,7 +267,7 @@ def test_fetch_credentials_handles_alternate_response_structure(
     encrypted_credentials: list[dict],
     test_secret_key: bytes,
 ):
-    """Test fetch_credentials con estructura de respuesta alternativa (entries directas)."""
+    """Test fetch_credentials with alternate response structure (direct entries)."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
@@ -275,7 +275,7 @@ def test_fetch_credentials_handles_alternate_response_structure(
     sync_client.login()
     sync_client.secret_key = test_secret_key
 
-    # Mock con estructura alternativa (entries directo en root)
+    # Mock with alternate structure (entries directly in root)
     alternate_response = {"entries": encrypted_credentials}
     respx.get(f"{SYNC_API_BASE}/sync/credentials").mock(
         return_value=httpx.Response(200, json=alternate_response)
@@ -296,7 +296,7 @@ def test_fetch_credentials_handles_alternate_response_structure(
 def test_decrypt_credential_all_fields(
     sync_client: SyncClient, encrypted_credentials: list[dict], test_secret_key: bytes
 ):
-    """Test descifrado de credencial con todos los campos."""
+    """Test decrypting credential with all fields."""
     # Arrange
     sync_client.secret_key = test_secret_key
     entry = encrypted_credentials[0]  # github.com
@@ -316,7 +316,7 @@ def test_decrypt_credential_all_fields(
 def test_decrypt_credential_minimal_fields(
     sync_client: SyncClient, encrypted_credentials: list[dict], test_secret_key: bytes
 ):
-    """Test descifrado de credencial con campos mínimos."""
+    """Test decrypting credential with minimal fields."""
     # Arrange
     sync_client.secret_key = test_secret_key
     entry = encrypted_credentials[2]  # example.com (minimal)
@@ -336,7 +336,7 @@ def test_decrypt_credential_minimal_fields(
 def test_decrypt_credential_empty_entry(
     sync_client: SyncClient, test_secret_key: bytes
 ):
-    """Test descifrado de entrada vacía retorna None."""
+    """Test decrypting empty entry returns None."""
     # Arrange
     sync_client.secret_key = test_secret_key
     empty_entry = {}
@@ -351,24 +351,24 @@ def test_decrypt_credential_empty_entry(
 def test_decrypt_credential_without_secret_key(
     sync_client: SyncClient, encrypted_credentials: list[dict]
 ):
-    """Test descifrado sin secret key retorna valores cifrados sin descifrar."""
-    # Arrange - No setear secret_key (será None)
+    """Test decrypting without secret key returns encrypted values."""
+    # Arrange - Don't set secret_key (will be None)
     entry = encrypted_credentials[0]
 
     # Act
     cred = sync_client._decrypt_credential(entry)
 
-    # Assert - Debe retornar credencial con valores cifrados (base64) sin descifrar
+    # Assert - Should return credential with encrypted values (base64) not decrypted
     assert cred is not None
-    # Los valores deben seguir cifrados (ser strings base64 largos)
-    assert len(cred.domain) > 40  # Base64 cifrado es largo
+    # Values should still be encrypted (long base64 strings)
+    assert len(cred.domain) > 40  # Encrypted base64 is long
     assert len(cred.username) > 40
 
 
 def test_decrypt_credential_with_domain_title_fallback(
     sync_client: SyncClient, test_secret_key: bytes
 ):
-    """Test que usa domainTitle como fallback si no hay title."""
+    """Test that domainTitle is used as fallback if no title."""
     # Arrange
     from ddgo_backup.crypto import encrypt_data
 
@@ -399,7 +399,7 @@ def test_decrypt_credential_with_domain_title_fallback(
 def test_context_manager(
     test_user_id: str, login_keys: LoginKeys, mock_login_response: dict
 ):
-    """Test que SyncClient funciona como context manager."""
+    """Test that SyncClient works as context manager."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
@@ -410,9 +410,9 @@ def test_context_manager(
         client.login()
         assert client.token == "mock_jwt_token_for_testing"
 
-    # Assert - El cliente debe estar cerrado después del context manager
-    # No hay una forma directa de verificar esto con httpx.Client,
-    # pero podemos verificar que no falla
+    # Assert - Client should be closed after context manager
+    # There's no direct way to verify this with httpx.Client,
+    # but we can verify it doesn't fail
     assert True
 
 
@@ -425,9 +425,9 @@ def test_context_manager(
 def test_login_with_empty_devices_list(
     sync_client: SyncClient, mock_login_response: dict
 ):
-    """Test login con lista de dispositivos vacía."""
+    """Test login with empty devices list."""
     # Arrange
-    # Modificar el mock para tener devices vacío
+    # Modify mock to have empty devices
     mock_response = mock_login_response.copy()
     mock_response["devices"] = []
 
@@ -449,7 +449,7 @@ def test_fetch_credentials_with_decryption_failures(
     mock_login_response: dict,
     test_secret_key: bytes,
 ):
-    """Test que fetch_credentials continúa aunque falle descifrar algunas credenciales."""
+    """Test that fetch_credentials continues even if some credentials fail to decrypt."""
     # Arrange
     respx.post(f"{SYNC_API_BASE}/sync/login").mock(
         return_value=httpx.Response(200, json=mock_login_response)
@@ -457,7 +457,7 @@ def test_fetch_credentials_with_decryption_failures(
     sync_client.login()
     sync_client.secret_key = test_secret_key
 
-    # Mock con credenciales parcialmente corruptas
+    # Mock with partially corrupted credentials
     from ddgo_backup.crypto import encrypt_data
 
     valid_cred = {
@@ -481,5 +481,5 @@ def test_fetch_credentials_with_decryption_failures(
     # Act
     credentials = sync_client.fetch_credentials()
 
-    # Assert - Debe retornar solo la credencial válida
-    assert len(credentials) >= 1  # Al menos la válida
+    # Assert - Should return only the valid credential
+    assert len(credentials) >= 1  # At least the valid one

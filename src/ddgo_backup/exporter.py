@@ -1,7 +1,7 @@
 """
-exporter.py - Exportación de credenciales a diferentes formatos
+exporter.py - Export credentials to different formats
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 """
 
 import csv
@@ -19,16 +19,16 @@ def export_to_csv(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales a un archivo CSV.
+    Export credentials to a CSV file.
 
-    Formato: name,url,username,password,notes,title
+    Format: name,url,username,password,notes,title
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -36,7 +36,7 @@ def export_to_csv(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a {output_path}")
+    logger.info(f"Exporting {len(credentials)} credentials to {output_path}")
 
     fieldnames = ["name", "url", "username", "password", "notes", "title"]
 
@@ -56,7 +56,7 @@ def export_to_csv(
                 }
             )
 
-    logger.success(f"Exportadas {len(credentials)} credenciales a {output_path}")
+    logger.success(f"Exported {len(credentials)} credentials to {output_path}")
     return output_path
 
 
@@ -65,14 +65,14 @@ def export_to_json(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales a un archivo JSON.
+    Export credentials to a JSON file.
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -80,7 +80,7 @@ def export_to_json(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a {output_path}")
+    logger.info(f"Exporting {len(credentials)} credentials to {output_path}")
 
     data = {
         "exported_at": datetime.now().isoformat(),
@@ -100,7 +100,7 @@ def export_to_json(
     with output_path.open("w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
-    logger.success(f"Exportadas {len(credentials)} credenciales a {output_path}")
+    logger.success(f"Exported {len(credentials)} credentials to {output_path}")
     return output_path
 
 
@@ -109,14 +109,14 @@ def export_to_bitwarden(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales en formato compatible con Bitwarden.
+    Export credentials in Bitwarden-compatible format.
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -124,7 +124,7 @@ def export_to_bitwarden(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a formato Bitwarden")
+    logger.info(f"Exporting {len(credentials)} credentials to Bitwarden format")
 
     items = []
     for cred in credentials:
@@ -149,7 +149,7 @@ def export_to_bitwarden(
         json.dump(data, f, indent=2, ensure_ascii=False)
 
     logger.success(
-        f"Exportadas {len(credentials)} credenciales en formato Bitwarden a {output_path}"
+        f"Exported {len(credentials)} credentials in Bitwarden format to {output_path}"
     )
     return output_path
 
@@ -159,16 +159,16 @@ def export_to_protonpass(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales en formato CSV compatible con ProtonPass.
+    Export credentials in ProtonPass-compatible CSV format.
 
-    Formato ProtonPass: name,url,username,password,note,totp
+    Format: name,url,username,password,note,totp
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -176,7 +176,7 @@ def export_to_protonpass(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a formato ProtonPass")
+    logger.info(f"Exporting {len(credentials)} credentials to ProtonPass format")
 
     fieldnames = ["name", "url", "username", "password", "note", "totp"]
 
@@ -185,7 +185,7 @@ def export_to_protonpass(
         writer.writeheader()
 
         for cred in credentials:
-            # ProtonPass espera URL completa con https://
+            # ProtonPass expects full URL with https://
             url = cred.domain or ""
             if url and not url.startswith(("http://", "https://")):
                 url = f"https://{url}"
@@ -197,12 +197,12 @@ def export_to_protonpass(
                     "username": cred.username or "",
                     "password": cred.password or "",
                     "note": cred.notes or "",
-                    "totp": "",  # DuckDuckGo no guarda TOTP
+                    "totp": "",  # DuckDuckGo doesn't store TOTP
                 }
             )
 
     logger.success(
-        f"Exportadas {len(credentials)} credenciales en formato ProtonPass a {output_path}"
+        f"Exported {len(credentials)} credentials in ProtonPass format to {output_path}"
     )
     return output_path
 
@@ -212,16 +212,16 @@ def export_to_1password(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales en formato CSV compatible con 1Password.
+    Export credentials in 1Password-compatible CSV format.
 
-    Formato: title,website,username,password,notes
+    Format: title,website,username,password,notes
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -229,7 +229,7 @@ def export_to_1password(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a formato 1Password")
+    logger.info(f"Exporting {len(credentials)} credentials to 1Password format")
 
     fieldnames = ["title", "website", "username", "password", "notes"]
 
@@ -249,7 +249,7 @@ def export_to_1password(
             )
 
     logger.success(
-        f"Exportadas {len(credentials)} credenciales en formato 1Password a {output_path}"
+        f"Exported {len(credentials)} credentials in 1Password format to {output_path}"
     )
     return output_path
 
@@ -259,16 +259,16 @@ def export_to_nordpass(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales en formato CSV compatible con NordPass.
+    Export credentials in NordPass-compatible CSV format.
 
-    Formato NordPass: name,url,username,password,note
+    Format: name,url,username,password,note
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -276,7 +276,7 @@ def export_to_nordpass(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a formato NordPass")
+    logger.info(f"Exporting {len(credentials)} credentials to NordPass format")
 
     fieldnames = ["name", "url", "username", "password", "note"]
 
@@ -300,7 +300,7 @@ def export_to_nordpass(
             )
 
     logger.success(
-        f"Exportadas {len(credentials)} credenciales en formato NordPass a {output_path}"
+        f"Exported {len(credentials)} credentials in NordPass format to {output_path}"
     )
     return output_path
 
@@ -310,16 +310,16 @@ def export_to_roboform(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales en formato CSV compatible con RoboForm.
+    Export credentials in RoboForm-compatible CSV format.
 
-    Formato RoboForm: Name,Url,MatchUrl,Login,Pwd,Note
+    Format: Name,Url,MatchUrl,Login,Pwd,Note
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -327,7 +327,7 @@ def export_to_roboform(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a formato RoboForm")
+    logger.info(f"Exporting {len(credentials)} credentials to RoboForm format")
 
     fieldnames = ["Name", "Url", "MatchUrl", "Login", "Pwd", "Note"]
 
@@ -344,7 +344,7 @@ def export_to_roboform(
                 {
                     "Name": cred.title or cred.domain or "",
                     "Url": url,
-                    "MatchUrl": url,  # RoboForm usa esto para matching
+                    "MatchUrl": url,  # RoboForm uses this for matching
                     "Login": cred.username or "",
                     "Pwd": cred.password or "",
                     "Note": cred.notes or "",
@@ -352,7 +352,7 @@ def export_to_roboform(
             )
 
     logger.success(
-        f"Exportadas {len(credentials)} credenciales en formato RoboForm a {output_path}"
+        f"Exported {len(credentials)} credentials in RoboForm format to {output_path}"
     )
     return output_path
 
@@ -362,16 +362,16 @@ def export_to_keeper(
     output_path: Path | str | None = None,
 ) -> Path:
     """
-    Exporta credenciales en formato CSV compatible con Keeper.
+    Export credentials in Keeper-compatible CSV format.
 
-    Formato Keeper: Folder,Title,Login,Password,Website Address,Notes
+    Format: Folder,Title,Login,Password,Website Address,Notes
 
     Args:
-        credentials: Lista de credenciales descifradas
-        output_path: Ruta del archivo de salida (opcional)
+        credentials: List of decrypted credentials
+        output_path: Output file path (optional)
 
     Returns:
-        Path: Ruta del archivo generado
+        Path: Path of the generated file
     """
     if output_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -379,7 +379,7 @@ def export_to_keeper(
     else:
         output_path = Path(output_path)
 
-    logger.info(f"Exportando {len(credentials)} credenciales a formato Keeper")
+    logger.info(f"Exporting {len(credentials)} credentials to Keeper format")
 
     fieldnames = ["Folder", "Title", "Login", "Password", "Website Address", "Notes"]
 
@@ -394,7 +394,7 @@ def export_to_keeper(
 
             writer.writerow(
                 {
-                    "Folder": "DuckDuckGo Import",  # Carpeta por defecto
+                    "Folder": "DuckDuckGo Import",  # Default folder
                     "Title": cred.title or cred.domain or "",
                     "Login": cred.username or "",
                     "Password": cred.password or "",
@@ -404,6 +404,6 @@ def export_to_keeper(
             )
 
     logger.success(
-        f"Exportadas {len(credentials)} credenciales en formato Keeper a {output_path}"
+        f"Exported {len(credentials)} credentials in Keeper format to {output_path}"
     )
     return output_path

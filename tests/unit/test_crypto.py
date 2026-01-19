@@ -1,9 +1,9 @@
 """
-test_crypto.py - Tests unitarios para módulo criptográfico
+test_crypto.py - Unit tests for cryptographic module
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 
-Tests de funciones criptográficas:
+Tests for cryptographic functions:
 - KDF derivation (BLAKE2b)
 - Recovery code decoding
 - Login key preparation
@@ -43,7 +43,7 @@ from ddgo_backup.crypto import (
 
 
 def test_kdf_derive_from_key_success(test_primary_key):
-    """Test derivación exitosa de subclave con KDF."""
+    """Test successful subkey derivation with KDF."""
     # Arrange
     subkey_size = 32
     subkey_id = 1
@@ -58,7 +58,7 @@ def test_kdf_derive_from_key_success(test_primary_key):
 
 
 def test_kdf_derive_from_key_different_ids_produce_different_keys(test_primary_key):
-    """Test que diferentes subkey_id producen claves diferentes."""
+    """Test that different subkey_id produce different keys."""
     # Arrange
     context = b"TestCtx"
 
@@ -73,7 +73,7 @@ def test_kdf_derive_from_key_different_ids_produce_different_keys(test_primary_k
 def test_kdf_derive_from_key_different_contexts_produce_different_keys(
     test_primary_key,
 ):
-    """Test que diferentes contextos producen claves diferentes."""
+    """Test that different contexts produce different keys."""
     # Arrange
     subkey_id = 1
 
@@ -86,7 +86,7 @@ def test_kdf_derive_from_key_different_contexts_produce_different_keys(
 
 
 def test_kdf_derive_from_key_deterministic(test_primary_key):
-    """Test que la derivación es determinística."""
+    """Test that derivation is deterministic."""
     # Arrange
     subkey_size = 32
     subkey_id = 1
@@ -101,21 +101,21 @@ def test_kdf_derive_from_key_deterministic(test_primary_key):
 
 
 def test_kdf_derive_from_key_context_too_long(test_primary_key):
-    """Test error cuando el contexto es demasiado largo."""
+    """Test error when context is too long."""
     # Arrange
     context = b"x" * (KDF_PERSONAL_SIZE + 1)
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Context debe ser"):
+    with pytest.raises(ValueError, match="Context must be"):
         _kdf_derive_from_key(32, 1, context, test_primary_key)
 
 
 def test_kdf_derive_from_key_matches_ddg_contexts(test_primary_key):
-    """Test que los contextos de DDG producen claves válidas."""
-    # Arrange - Usar contextos reales de DDG
+    """Test that DDG contexts produce valid keys."""
+    # Arrange - Use real DDG contexts
     contexts = [KDF_CONTEXT_PASSWORD, KDF_CONTEXT_STRETCHED]
 
-    # Act & Assert - No debe lanzar excepciones
+    # Act & Assert - Should not raise exceptions
     for context in contexts:
         key = _kdf_derive_from_key(32, 1, context, test_primary_key)
         assert len(key) == 32
@@ -129,7 +129,7 @@ def test_kdf_derive_from_key_matches_ddg_contexts(test_primary_key):
 def test_decode_recovery_code_success(
     test_recovery_code, test_primary_key_b64, test_user_id
 ):
-    """Test decodificación exitosa de recovery code."""
+    """Test successful recovery code decoding."""
     # Act
     primary_key_b64, user_id = decode_recovery_code(test_recovery_code)
 
@@ -141,7 +141,7 @@ def test_decode_recovery_code_success(
 def test_decode_recovery_code_multiline(
     test_recovery_code_multiline, test_primary_key_b64, test_user_id
 ):
-    """Test decodificación de recovery code con saltos de línea."""
+    """Test recovery code decoding with line breaks."""
     # Act
     primary_key_b64, user_id = decode_recovery_code(test_recovery_code_multiline)
 
@@ -153,8 +153,8 @@ def test_decode_recovery_code_multiline(
 def test_decode_recovery_code_with_whitespace(
     test_recovery_code, test_primary_key_b64, test_user_id
 ):
-    """Test decodificación con espacios y tabs."""
-    # Arrange - Agregar espacios y tabs
+    """Test decoding with spaces and tabs."""
+    # Arrange - Add spaces and tabs
     messy_code = f"  \t{test_recovery_code}\n\t  "
 
     # Act
@@ -168,8 +168,8 @@ def test_decode_recovery_code_with_whitespace(
 def test_decode_recovery_code_with_hyphens(
     test_recovery_code, test_primary_key_b64, test_user_id
 ):
-    """Test decodificación con guiones (formato manual)."""
-    # Arrange - Agregar guiones cada 4 caracteres
+    """Test decoding with hyphens (manual format)."""
+    # Arrange - Add hyphens every 4 characters
     code_with_hyphens = "-".join(
         [test_recovery_code[i : i + 4] for i in range(0, len(test_recovery_code), 4)]
     )
@@ -183,8 +183,8 @@ def test_decode_recovery_code_with_hyphens(
 
 
 def test_decode_recovery_code_alternative_format(test_primary_key_b64, test_user_id):
-    """Test decodificación con formato alternativo (sin 'recovery' wrapper)."""
-    # Arrange - Formato sin wrapper
+    """Test decoding with alternative format (no 'recovery' wrapper)."""
+    # Arrange - Format without wrapper
     data = {
         "primary_key": test_primary_key_b64,
         "user_id": test_user_id,
@@ -200,33 +200,33 @@ def test_decode_recovery_code_alternative_format(test_primary_key_b64, test_user
 
 
 def test_decode_recovery_code_invalid_base64():
-    """Test error con Base64 inválido."""
+    """Test error with invalid Base64."""
     # Arrange
     invalid_code = "not-valid-base64!@#$%"
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Recovery code inválido"):
+    with pytest.raises(ValueError, match="Invalid recovery code"):
         decode_recovery_code(invalid_code)
 
 
 def test_decode_recovery_code_invalid_json():
-    """Test error con JSON inválido."""
-    # Arrange - Base64 válido pero JSON inválido
+    """Test error with invalid JSON."""
+    # Arrange - Valid Base64 but invalid JSON
     invalid_json = base64.b64encode(b"{not valid json}").decode("ascii")
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Recovery code inválido"):
+    with pytest.raises(ValueError, match="Invalid recovery code"):
         decode_recovery_code(invalid_json)
 
 
 def test_decode_recovery_code_missing_fields():
-    """Test error cuando faltan campos requeridos."""
-    # Arrange - JSON válido pero sin campos esperados
+    """Test error when required fields are missing."""
+    # Arrange - Valid JSON but missing expected fields
     data = {"some_field": "some_value"}
     code = base64.b64encode(json.dumps(data).encode()).decode("ascii")
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Formato de recovery code no reconocido"):
+    with pytest.raises(ValueError, match="Unrecognized recovery code format"):
         decode_recovery_code(code)
 
 
@@ -236,7 +236,7 @@ def test_decode_recovery_code_missing_fields():
 
 
 def test_prepare_for_login_success(test_primary_key_b64, test_primary_key):
-    """Test preparación exitosa de claves para login."""
+    """Test successful login key preparation."""
     # Act
     result = prepare_for_login(test_primary_key_b64)
 
@@ -248,11 +248,11 @@ def test_prepare_for_login_success(test_primary_key_b64, test_primary_key):
 
 
 def test_prepare_for_login_derives_correct_keys(test_primary_key_b64, test_primary_key):
-    """Test que las claves derivadas son correctas."""
+    """Test that derived keys are correct."""
     # Act
     result = prepare_for_login(test_primary_key_b64)
 
-    # Assert - Verificar que coinciden con derivación manual
+    # Assert - Verify they match manual derivation
     expected_password_hash = _kdf_derive_from_key(
         HASH_SIZE, SUBKEY_ID_PASSWORD_HASH, KDF_CONTEXT_PASSWORD, test_primary_key
     )
@@ -268,7 +268,7 @@ def test_prepare_for_login_derives_correct_keys(test_primary_key_b64, test_prima
 
 
 def test_prepare_for_login_deterministic(test_primary_key_b64):
-    """Test que la preparación es determinística."""
+    """Test that preparation is deterministic."""
     # Act
     result1 = prepare_for_login(test_primary_key_b64)
     result2 = prepare_for_login(test_primary_key_b64)
@@ -279,22 +279,22 @@ def test_prepare_for_login_deterministic(test_primary_key_b64):
 
 
 def test_prepare_for_login_invalid_base64():
-    """Test error con Base64 inválido."""
+    """Test error with invalid Base64."""
     # Arrange
     invalid_b64 = "not-valid-base64!@#"
 
     # Act & Assert
-    with pytest.raises(Exception):  # base64.b64decode lanza Exception genérico
+    with pytest.raises(Exception):  # base64.b64decode raises generic Exception
         prepare_for_login(invalid_b64)
 
 
 def test_prepare_for_login_wrong_key_size():
-    """Test error cuando la primary key tiene tamaño incorrecto."""
-    # Arrange - Key de 16 bytes en lugar de 32
+    """Test error when primary key has incorrect size."""
+    # Arrange - 16-byte key instead of 32
     short_key = base64.b64encode(b"x" * 16).decode("ascii")
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Primary key debe ser 32 bytes"):
+    with pytest.raises(ValueError, match="Primary key must be 32 bytes"):
         prepare_for_login(short_key)
 
 
@@ -304,15 +304,15 @@ def test_prepare_for_login_wrong_key_size():
 
 
 def test_decrypt_protected_secret_key_success(test_secret_key):
-    """Test descifrado exitoso de secret key protegida."""
-    # Arrange - Cifrar una secret key de prueba
+    """Test successful protected secret key decryption."""
+    # Arrange - Encrypt a test secret key
     from nacl.bindings import crypto_secretbox
     from nacl.utils import random
 
     stretched_pk = random(32)
     nonce = random(NONCE_SIZE)
     ciphertext = crypto_secretbox(test_secret_key, nonce, stretched_pk)
-    # Formato DDG: ciphertext + nonce
+    # DDG format: ciphertext + nonce
     protected = ciphertext + nonce
     protected_b64 = base64.b64encode(protected).decode("ascii")
 
@@ -325,7 +325,7 @@ def test_decrypt_protected_secret_key_success(test_secret_key):
 
 
 def test_decrypt_protected_secret_key_wrong_key():
-    """Test error al descifrar con clave incorrecta."""
+    """Test error when decrypting with incorrect key."""
     # Arrange
     from nacl.bindings import crypto_secretbox
     from nacl.utils import random
@@ -340,38 +340,38 @@ def test_decrypt_protected_secret_key_wrong_key():
     protected_b64 = base64.b64encode(protected).decode("ascii")
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Error al descifrar secret key"):
+    with pytest.raises(ValueError, match="Error decrypting secret key"):
         decrypt_protected_secret_key(protected_b64, wrong_key)
 
 
 def test_decrypt_protected_secret_key_invalid_format():
-    """Test error con formato inválido (muy corto)."""
-    # Arrange - Datos demasiado cortos para contener nonce
+    """Test error with invalid format (too short)."""
+    # Arrange - Data too short to contain nonce
     short_data = base64.b64encode(b"x" * 10).decode("ascii")
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Error al descifrar secret key"):
+    with pytest.raises(ValueError, match="Error decrypting secret key"):
         decrypt_protected_secret_key(short_data, b"x" * 32)
 
 
 def test_decrypt_protected_secret_key_invalid_base64():
-    """Test error con Base64 inválido."""
+    """Test error with invalid Base64."""
     # Arrange
     invalid_b64 = "not-valid-base64!@#"
     stretched_pk = b"x" * 32
 
     # Act & Assert
-    with pytest.raises(Exception):  # base64.b64decode lanza Exception
+    with pytest.raises(Exception):  # base64.b64decode raises Exception
         decrypt_protected_secret_key(invalid_b64, stretched_pk)
 
 
 # ============================================================================
-# TESTS: encrypt_data y decrypt_data
+# TESTS: encrypt_data and decrypt_data
 # ============================================================================
 
 
 def test_encrypt_data_success(test_secret_key):
-    """Test cifrado exitoso de datos."""
+    """Test successful data encryption."""
     # Arrange
     plaintext = "Hello, DuckDuckGo!"
 
@@ -381,13 +381,13 @@ def test_encrypt_data_success(test_secret_key):
     # Assert
     assert isinstance(result, str)
     assert len(result) > 0
-    # Verificar que es Base64 válido
+    # Verify it's valid Base64
     decoded = base64.b64decode(result)
-    assert len(decoded) > len(plaintext)  # Incluye MAC y nonce
+    assert len(decoded) > len(plaintext)  # Includes MAC and nonce
 
 
 def test_decrypt_data_success(test_secret_key):
-    """Test descifrado exitoso de datos."""
+    """Test successful data decryption."""
     # Arrange
     plaintext = "Test password 123"
     encrypted = encrypt_data(plaintext, test_secret_key)
@@ -400,7 +400,7 @@ def test_decrypt_data_success(test_secret_key):
 
 
 def test_encrypt_decrypt_roundtrip(test_secret_key):
-    """Test que encrypt y decrypt son operaciones inversas."""
+    """Test that encrypt and decrypt are inverse operations."""
     # Arrange
     test_cases = [
         "simple password",
@@ -408,9 +408,9 @@ def test_encrypt_decrypt_roundtrip(test_secret_key):
         "emoji password 🔐🦆",
         "multi\nline\npassword",
         "password with\ttabs",
-        "",  # String vacío
-        " ",  # Solo espacio
-        "a" * 1000,  # String largo
+        "",  # Empty string
+        " ",  # Just space
+        "a" * 1000,  # Long string
     ]
 
     for plaintext in test_cases:
@@ -423,7 +423,7 @@ def test_encrypt_decrypt_roundtrip(test_secret_key):
 
 
 def test_encrypt_data_different_outputs_same_input(test_secret_key):
-    """Test que cifrar el mismo texto produce outputs diferentes (por nonce aleatorio)."""
+    """Test that encrypting same text produces different outputs (random nonce)."""
     # Arrange
     plaintext = "Same text"
 
@@ -432,14 +432,14 @@ def test_encrypt_data_different_outputs_same_input(test_secret_key):
     encrypted2 = encrypt_data(plaintext, test_secret_key)
 
     # Assert
-    assert encrypted1 != encrypted2  # Diferentes por nonce aleatorio
-    # Pero ambos descifran al mismo texto
+    assert encrypted1 != encrypted2  # Different due to random nonce
+    # But both decrypt to the same text
     assert decrypt_data(encrypted1, test_secret_key) == plaintext
     assert decrypt_data(encrypted2, test_secret_key) == plaintext
 
 
 def test_decrypt_data_empty_string(test_secret_key):
-    """Test descifrado de string vacío."""
+    """Test decrypting empty string."""
     # Act
     result = decrypt_data("", test_secret_key)
 
@@ -448,7 +448,7 @@ def test_decrypt_data_empty_string(test_secret_key):
 
 
 def test_decrypt_data_wrong_key(test_secret_key):
-    """Test error al descifrar con clave incorrecta."""
+    """Test error when decrypting with incorrect key."""
     # Arrange
     plaintext = "Secret data"
     correct_key = test_secret_key
@@ -456,43 +456,43 @@ def test_decrypt_data_wrong_key(test_secret_key):
     encrypted = encrypt_data(plaintext, correct_key)
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Error al descifrar datos"):
+    with pytest.raises(ValueError, match="Error decrypting data"):
         decrypt_data(encrypted, wrong_key)
 
 
 def test_decrypt_data_corrupted_ciphertext(test_secret_key):
-    """Test error al descifrar datos corruptos."""
+    """Test error when decrypting corrupted data."""
     # Arrange
     plaintext = "Secret data"
     encrypted = encrypt_data(plaintext, test_secret_key)
-    # Corromper el ciphertext
+    # Corrupt the ciphertext
     encrypted_bytes = base64.b64decode(encrypted)
-    corrupted = encrypted_bytes[:-1] + b"X"  # Cambiar último byte
+    corrupted = encrypted_bytes[:-1] + b"X"  # Change last byte
     corrupted_b64 = base64.b64encode(corrupted).decode("ascii")
 
     # Act & Assert
-    with pytest.raises(ValueError, match="Error al descifrar datos"):
+    with pytest.raises(ValueError, match="Error decrypting data"):
         decrypt_data(corrupted_b64, test_secret_key)
 
 
 def test_decrypt_data_invalid_base64(test_secret_key):
-    """Test error con Base64 inválido."""
+    """Test error with invalid Base64."""
     # Arrange
     invalid_b64 = "not-valid-base64!@#"
 
     # Act & Assert
-    with pytest.raises(Exception):  # base64.b64decode lanza Exception
+    with pytest.raises(Exception):  # base64.b64decode raises Exception
         decrypt_data(invalid_b64, test_secret_key)
 
 
 def test_encrypt_data_unicode_characters(test_secret_key):
-    """Test cifrado de caracteres Unicode."""
+    """Test encrypting Unicode characters."""
     # Arrange
     unicode_texts = [
-        "中文密码",  # Chino
-        "пароль",  # Ruso
-        "パスワード",  # Japonés
-        "كلمة السر",  # Árabe
+        "中文密码",  # Chinese
+        "пароль",  # Russian
+        "パスワード",  # Japanese
+        "كلمة السر",  # Arabic
         "🦆🔐💻",  # Emojis
     ]
 
@@ -511,7 +511,7 @@ def test_encrypt_data_unicode_characters(test_secret_key):
 
 
 def test_decrypted_credential_creation():
-    """Test creación de DecryptedCredential."""
+    """Test DecryptedCredential creation."""
     # Act
     cred = DecryptedCredential(
         domain="github.com",
@@ -530,7 +530,7 @@ def test_decrypted_credential_creation():
 
 
 def test_decrypted_credential_optional_fields():
-    """Test DecryptedCredential con campos opcionales en None."""
+    """Test DecryptedCredential with optional fields as None."""
     # Act
     cred = DecryptedCredential(
         domain="example.com",
@@ -552,7 +552,7 @@ def test_decrypted_credential_optional_fields():
 
 
 def test_login_keys_creation(test_primary_key):
-    """Test creación de LoginKeys."""
+    """Test LoginKeys creation."""
     # Arrange
     password_hash = b"x" * 32
     stretched_pk = b"y" * 32
@@ -571,13 +571,13 @@ def test_login_keys_creation(test_primary_key):
 
 
 # ============================================================================
-# TESTS: Constantes
+# TESTS: Constants
 # ============================================================================
 
 
 def test_crypto_constants():
-    """Test que las constantes tienen los valores esperados."""
-    # Assert - Verificar tamaños según libsodium
+    """Test that constants have expected values."""
+    # Assert - Verify sizes according to libsodium
     assert PRIMARY_KEY_SIZE == 32
     assert SECRET_KEY_SIZE == 32
     assert HASH_SIZE == 32
@@ -585,12 +585,12 @@ def test_crypto_constants():
     assert NONCE_SIZE == 24
     assert KDF_PERSONAL_SIZE == 16
 
-    # Verificar contextos KDF
+    # Verify KDF contexts
     assert len(KDF_CONTEXT_PASSWORD) == 8
     assert len(KDF_CONTEXT_STRETCHED) == 8
     assert KDF_CONTEXT_PASSWORD == b"Password"
     assert KDF_CONTEXT_STRETCHED == b"Stretchy"
 
-    # Verificar subkey IDs
+    # Verify subkey IDs
     assert SUBKEY_ID_PASSWORD_HASH == 1
     assert SUBKEY_ID_STRETCHED_PK == 2

@@ -11,7 +11,7 @@
 
 # DDG Backup
 
-### Herramienta de Exportación de Contraseñas de DuckDuckGo
+### DuckDuckGo Password Export Tool
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -21,131 +21,131 @@
 [![Security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 [![SAST: semgrep](https://img.shields.io/badge/SAST-semgrep-purple.svg)](https://semgrep.dev/)
 
-**Exporta tus contraseñas guardadas en DuckDuckGo Android a CSV y otros formatos de password managers populares.**
+**Export your passwords saved in DuckDuckGo Android to CSV and other popular password manager formats.**
 
-[Características](#-características) •
-[Instalación](#-instalación) •
-[Obtener Recovery Code](#-cómo-obtener-tu-recovery-code) •
-[Uso](#-uso) •
-[Formatos](#-formatos-de-exportación)
+[Features](#-features) •
+[Installation](#-installation) •
+[Get Recovery Code](#-how-to-get-your-recovery-code) •
+[Usage](#-usage) •
+[Export Formats](#-export-formats)
 
 </div>
 
 ---
 
-## 📋 Tabla de Contenidos
+## Table of Contents
 
-- [Descripción](#-descripción)
-- [Características](#-características)
-- [Requisitos](#-requisitos)
-- [Instalación](#-instalación)
-- [Cómo Obtener tu Recovery Code](#-cómo-obtener-tu-recovery-code)
-- [Uso](#-uso)
-- [Formatos de Exportación](#-formatos-de-exportación)
-- [Arquitectura Técnica](#-arquitectura-técnica)
-- [Seguridad](#-seguridad)
-- [Desarrollo](#-desarrollo)
-- [Solución de Problemas](#-solución-de-problemas)
+- [Description](#-description)
+- [Features](#-features)
+- [Requirements](#-requirements)
+- [Installation](#-installation)
+- [How to Get Your Recovery Code](#-how-to-get-your-recovery-code)
+- [Usage](#-usage)
+- [Export Formats](#-export-formats)
+- [Technical Architecture](#-technical-architecture)
+- [Security](#-security)
+- [Development](#-development)
+- [Troubleshooting](#-troubleshooting)
 - [Changelog](#-changelog)
-- [Autor](#-autor)
-- [Licencia](#-licencia)
+- [Author](#-author)
+- [License](#-license)
 
 ---
 
-## 📖 Descripción
+## Description
 
-**DDG Backup** es una herramienta de línea de comandos que permite exportar las contraseñas guardadas en la aplicación DuckDuckGo para Android.
+**DDG Backup** is a command-line tool that allows you to export passwords saved in the DuckDuckGo Android app.
 
-DuckDuckGo no ofrece una función nativa de exportación de contraseñas, lo que puede ser problemático si deseas:
+DuckDuckGo doesn't offer a native password export feature, which can be problematic if you want to:
 
-- 🔄 Migrar a otro gestor de contraseñas
-- 💾 Crear un backup de seguridad de tus credenciales
-- 🔍 Auditar qué contraseñas tienes guardadas
+- Migrate to another password manager
+- Create a security backup of your credentials
+- Audit what passwords you have saved
 
-Esta herramienta utiliza el **Recovery Code** oficial de DuckDuckGo y la API de sincronización para obtener tus credenciales de forma segura, descifrándolas localmente en tu computadora.
-
----
-
-## ✨ Características
-
-| Característica | Descripción |
-|----------------|-------------|
-| 🔐 **Seguro** | Descifrado local - tus contraseñas nunca viajan en texto plano |
-| 📱 **Sin Root** | No requiere root ni acceso especial a tu dispositivo Android |
-| 📤 **Multi-formato** | Exporta a 8 formatos diferentes de password managers |
-| 🔑 **Oficial** | Usa el Recovery Code oficial de DuckDuckGo |
-| 🐍 **Python Moderno** | Escrito en Python 3.11+ con tipado estático |
-| ⚡ **Rápido** | Exporta cientos de contraseñas en segundos |
-
-### Formatos Soportados
-
-- ✅ CSV (genérico)
-- ✅ JSON
-- ✅ Bitwarden
-- ✅ 1Password
-- ✅ ProtonPass
-- ✅ NordPass
-- ✅ RoboForm
-- ✅ Keeper
+This tool uses the **official DuckDuckGo Recovery Code** and the sync API to securely obtain your credentials, decrypting them locally on your computer.
 
 ---
 
-## 📋 Requisitos
+## Features
 
-- **Python 3.11** o superior
-- **uv** (recomendado) o pip
-- Tu **Recovery Code** de DuckDuckGo Android
+| Feature | Description |
+|---------|-------------|
+| **Secure** | Local decryption - your passwords never travel in plain text |
+| **No Root** | Doesn't require root or special access to your Android device |
+| **Multi-format** | Export to 8 different password manager formats |
+| **Official** | Uses the official DuckDuckGo Recovery Code |
+| **Modern Python** | Written in Python 3.11+ with static typing |
+| **Fast** | Export hundreds of passwords in seconds |
 
-### Dependencias
+### Supported Formats
 
-| Paquete | Versión | Propósito |
-|---------|---------|-----------|
-| `pynacl` | ≥1.6.2 | Criptografía (libsodium) |
-| `httpx` | ≥0.28.1 | Cliente HTTP async |
-| `pydantic` | ≥2.12.5 | Validación de datos |
+- CSV (generic)
+- JSON
+- Bitwarden
+- 1Password
+- ProtonPass
+- NordPass
+- RoboForm
+- Keeper
+
+---
+
+## Requirements
+
+- **Python 3.11** or higher
+- **uv** (recommended) or pip
+- Your **Recovery Code** from DuckDuckGo Android
+
+### Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `pynacl` | ≥1.6.2 | Cryptography (libsodium) |
+| `httpx` | ≥0.28.1 | Async HTTP client |
+| `pydantic` | ≥2.12.5 | Data validation |
 | `loguru` | ≥0.7.3 | Logging |
 
 ---
 
-## 🚀 Instalación
+## Installation
 
-### Opción 1: Con uv (Recomendado)
+### Option 1: With uv (Recommended)
 
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone https://github.com/user/ddgo-backup.git
 cd ddgo-backup
 
-# Instalar dependencias con uv
+# Install dependencies with uv
 uv sync
 
-# Verificar instalación
+# Verify installation
 uv run python -m ddgo_backup --help
 ```
 
-### Opción 2: Con pip
+### Option 2: With pip
 
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone https://github.com/user/ddgo-backup.git
 cd ddgo-backup
 
-# Crear entorno virtual
+# Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 
-# Instalar
+# Install
 pip install -e .
 
-# Verificar instalación
+# Verify installation
 ddgo-backup --help
 ```
 
-### Opción 3: Script de ejecución rápida
+### Option 3: Quick Run Script
 
 ```bash
-# Crear script de ejecución
+# Create run script
 cat > run.sh << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
@@ -153,25 +153,25 @@ uv run python -m ddgo_backup "$@"
 EOF
 chmod +x run.sh
 
-# Ejecutar
+# Run
 ./run.sh
 ```
 
 ---
 
-## 📱 Cómo Obtener tu Recovery Code
+## How to Get Your Recovery Code
 
-El Recovery Code es la clave maestra que permite acceder a tus contraseñas sincronizadas. DuckDuckGo lo genera cuando activas la función de Sync & Backup.
+The Recovery Code is the master key that allows access to your synced passwords. DuckDuckGo generates it when you activate the Sync & Backup feature.
 
-### Paso 1: Abrir DuckDuckGo en tu Android
+### Step 1: Open DuckDuckGo on Your Android
 
 <table>
 <tr>
 <td width="50%">
 
-1. Abre la app **DuckDuckGo** en tu teléfono Android
-2. Toca el menú **⋮** (tres puntos verticales)
-3. Selecciona **Settings** (Configuración)
+1. Open the **DuckDuckGo** app on your Android phone
+2. Tap the **⋮** menu (three vertical dots)
+3. Select **Settings**
 
 </td>
 <td width="50%">
@@ -181,11 +181,11 @@ El Recovery Code es la clave maestra que permite acceder a tus contraseñas sinc
 │  DuckDuckGo Browser     │
 │  ─────────────────────  │
 │                         │
-│  [⋮] ← Toca aquí        │
+│  [⋮] ← Tap here         │
 │    │                    │
 │    ├─ Bookmarks         │
 │    ├─ Downloads         │
-│    └─ Settings ← Aquí   │
+│    └─ Settings ← Here   │
 │                         │
 └─────────────────────────┘
 ```
@@ -194,28 +194,28 @@ El Recovery Code es la clave maestra que permite acceder a tus contraseñas sinc
 </tr>
 </table>
 
-### Paso 2: Acceder a Sync & Backup
+### Step 2: Access Sync & Backup
 
 <table>
 <tr>
 <td width="50%">
 
-4. Dentro de Settings, busca y toca **Sync & Backup**
-5. Si no tienes sync activado, actívalo primero
+4. Inside Settings, find and tap **Sync & Backup**
+5. If you don't have sync enabled, enable it first
 
 </td>
 <td width="50%">
 
 ```
 ┌─────────────────────────┐
-│  ⚙️ Settings            │
+│  Settings               │
 │  ─────────────────────  │
 │                         │
 │  General                │
 │  Appearance             │
 │  Privacy                │
 │  ─────────────────────  │
-│  🔄 Sync & Backup ← Aquí│
+│  Sync & Backup ← Here   │
 │  ─────────────────────  │
 │  About                  │
 │                         │
@@ -226,29 +226,29 @@ El Recovery Code es la clave maestra que permite acceder a tus contraseñas sinc
 </tr>
 </table>
 
-### Paso 3: Obtener el Recovery Code
+### Step 3: Get the Recovery Code
 
 <table>
 <tr>
 <td width="50%">
 
-6. Toca **Recovery Code** o **Save Recovery PDF**
-7. Se mostrará tu código o se descargará un PDF
+6. Tap **Recovery Code** or **Save Recovery PDF**
+7. Your code will be displayed or a PDF will be downloaded
 
 </td>
 <td width="50%">
 
 ```
 ┌─────────────────────────┐
-│  🔄 Sync & Backup       │
+│  Sync & Backup          │
 │  ─────────────────────  │
 │                         │
-│  Status: ✅ Synced      │
+│  Status: Synced         │
 │  Devices: 2             │
 │                         │
 │  ─────────────────────  │
-│  📋 Recovery Code ← Aquí│
-│  📄 Save Recovery PDF   │
+│  Recovery Code ← Here   │
+│  Save Recovery PDF      │
 │  ─────────────────────  │
 │                         │
 └─────────────────────────┘
@@ -258,24 +258,24 @@ El Recovery Code es la clave maestra que permite acceder a tus contraseñas sinc
 </tr>
 </table>
 
-### Paso 4: Copiar el código
+### Step 4: Copy the Code
 
-El Recovery Code tiene este formato (JSON codificado en Base64):
+The Recovery Code has this format (Base64-encoded JSON):
 
 ```
-eyJyZWNvdmVyeSI6eyJwcmltYXJ5X2tleSI6IkVKRU1QTE
-9fRkFMU09fTk9fVVNBUl9FU1RPX0VTX1VOQV9ERUIP
-U1RSQUNJT04iLCJ1c2VyX2lkIjoiMDAwMDAwMDAtMDAw
+eyJyZWNvdmVyeSI6eyJwcmltYXJ5X2tleSI6IkVYQU1QTE
+VfRkFLRV9ET19OT1RfVVNFX1RISVNfSVNfQV9ERU1P
+U1RSQVRJT04iLCJ1c2VyX2lkIjoiMDAwMDAwMDAtMDAw
 MC0wMDAwLTAwMDAtMDAwMDAwMDAwMDAwIn19
 ```
 
-> ⚠️ **NOTA**: El PDF divide el código en varias líneas. **DDG Backup acepta el código con saltos de línea** - no necesitas juntarlo manualmente.
+> **NOTE**: The PDF splits the code into multiple lines. **DDG Backup accepts the code with line breaks** - you don't need to join it manually.
 
 ---
 
-## 💻 Uso
+## Usage
 
-### Modo Interactivo (Recomendado)
+### Interactive Mode (Recommended)
 
 ```bash
 uv run python -m ddgo_backup
@@ -286,80 +286,80 @@ uv run python -m ddgo_backup
   DuckDuckGo Password Backup Tool
 ============================================================
 
-Para exportar tus contraseñas necesitas tu Recovery Code.
-Lo puedes encontrar en: DDG App → Settings → Sync & Backup
+To export your passwords you need your Recovery Code.
+You can find it in: DDG App -> Settings -> Sync & Backup
 
-┌─────────────────────────────────────────────────────────────┐
-│  IMPORTANTE: El código del PDF viene en VARIAS LÍNEAS       │
-│                                                             │
-│  1. Pega TODO el código (puede ser 3-4 líneas)              │
-│  2. Presiona ENTER                                          │
-│  3. Presiona ENTER de nuevo (línea vacía) para continuar    │
-│                                                             │
-│  >>> ENTER + ENTER (vacío) = CONTINUAR <<<                  │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|  IMPORTANT: The code from the PDF comes in MULTIPLE LINES   |
+|                                                             |
+|  1. Paste the ENTIRE code (can be 3-4 lines)                |
+|  2. Press ENTER                                             |
+|  3. Press ENTER again (empty line) to continue              |
+|                                                             |
+|  >>> ENTER + ENTER (empty) = CONTINUE <<<                   |
++-------------------------------------------------------------+
 
-Recovery Code (pega y luego ENTER vacío):
-[pega tu código aquí, puede ser varias líneas]
-                                              ← ENTER vacío
+Recovery Code (paste then empty ENTER):
+[paste your code here, can be multiple lines]
+                                              ← empty ENTER
 
-20:19:43 | INFO     | Decodificando recovery code...
-20:19:43 | INFO     | Derivando claves de autenticación...
-20:19:44 | SUCCESS  | Login exitoso. 2 dispositivo(s) en la cuenta.
-20:19:45 | SUCCESS  | Descifradas 104 credenciales exitosamente
+20:19:43 | INFO     | Decoding recovery code...
+20:19:43 | INFO     | Deriving authentication keys...
+20:19:44 | SUCCESS  | Login successful. 2 device(s) in the account.
+20:19:45 | SUCCESS  | Decrypted 104 credentials successfully
 
-✅ Exportación completada: ddg_passwords_20260118_201945.csv
-   Total de credenciales: 104
+[OK] Export completed: ddg_passwords_20260118_201945.csv
+   Total credentials: 104
 ```
 
-### Modo Directo (con código en línea de comandos)
+### Direct Mode (with code in command line)
 
 ```bash
-# Exportar a CSV (formato por defecto)
-uv run python -m ddgo_backup --code "TU_RECOVERY_CODE"
+# Export to CSV (default format)
+uv run python -m ddgo_backup --code "YOUR_RECOVERY_CODE"
 
-# Especificar archivo de salida
-uv run python -m ddgo_backup --code "TU_RECOVERY_CODE" -o mis_passwords.csv
+# Specify output file
+uv run python -m ddgo_backup --code "YOUR_RECOVERY_CODE" -o my_passwords.csv
 
-# Exportar a formato específico
-uv run python -m ddgo_backup --code "TU_RECOVERY_CODE" --format bitwarden
+# Export to specific format
+uv run python -m ddgo_backup --code "YOUR_RECOVERY_CODE" --format bitwarden
 
-# Modo verbose (más información)
-uv run python -m ddgo_backup --code "TU_RECOVERY_CODE" -v
+# Verbose mode (more information)
+uv run python -m ddgo_backup --code "YOUR_RECOVERY_CODE" -v
 ```
 
-### Opciones de Línea de Comandos
+### Command Line Options
 
-| Opción | Corto | Descripción | Valor por defecto |
-|--------|-------|-------------|-------------------|
-| `--code` | | Recovery Code de DuckDuckGo | (interactivo) |
-| `--output` | `-o` | Archivo de salida | `ddg_passwords_TIMESTAMP.csv` |
-| `--format` | `-f` | Formato de exportación | `csv` |
-| `--verbose` | `-v` | Mostrar información detallada | `false` |
-| `--help` | `-h` | Mostrar ayuda | |
+| Option | Short | Description | Default |
+|--------|-------|-------------|---------|
+| `--code` | | DuckDuckGo Recovery Code | (interactive) |
+| `--output` | `-o` | Output file | `ddg_passwords_TIMESTAMP.csv` |
+| `--format` | `-f` | Export format | `csv` |
+| `--verbose` | `-v` | Show detailed information | `false` |
+| `--help` | `-h` | Show help | |
 
 ---
 
-## 📦 Formatos de Exportación
+## Export Formats
 
-### CSV Genérico
+### Generic CSV
 
 ```bash
 uv run python -m ddgo_backup --format csv
 ```
 
-| Columna | Descripción |
-|---------|-------------|
-| `name` | Dominio del sitio |
-| `url` | URL del sitio |
-| `username` | Nombre de usuario |
-| `password` | Contraseña |
-| `notes` | Notas adicionales |
-| `title` | Título del sitio |
+| Column | Description |
+|--------|-------------|
+| `name` | Site domain |
+| `url` | Site URL |
+| `username` | Username |
+| `password` | Password |
+| `notes` | Additional notes |
+| `title` | Site title |
 
 ```csv
 "name","url","username","password","notes","title"
-"github.com","github.com","usuario","contraseña123","","GitHub"
+"github.com","github.com","user","password123","","GitHub"
 ```
 
 ---
@@ -377,8 +377,8 @@ uv run python -m ddgo_backup --format json
   "credentials": [
     {
       "site": "github.com",
-      "username": "usuario",
-      "password": "contraseña123",
+      "username": "user",
+      "password": "password123",
       "notes": null,
       "title": "GitHub"
     }
@@ -394,7 +394,7 @@ uv run python -m ddgo_backup --format json
 uv run python -m ddgo_backup --format bitwarden -o bitwarden_import.json
 ```
 
-Formato JSON compatible con la importación de Bitwarden:
+Bitwarden-compatible JSON format:
 
 ```json
 {
@@ -406,19 +406,19 @@ Formato JSON compatible con la importación de Bitwarden:
       "notes": null,
       "login": {
         "uris": [{"uri": "https://github.com"}],
-        "username": "usuario",
-        "password": "contraseña123"
+        "username": "user",
+        "password": "password123"
       }
     }
   ]
 }
 ```
 
-**Cómo importar en Bitwarden:**
-1. Abre Bitwarden Web Vault
-2. Ve a Tools → Import Data
-3. Selecciona "Bitwarden (json)"
-4. Sube el archivo generado
+**How to import in Bitwarden:**
+1. Open Bitwarden Web Vault
+2. Go to Tools → Import Data
+3. Select "Bitwarden (json)"
+4. Upload the generated file
 
 ---
 
@@ -428,18 +428,18 @@ Formato JSON compatible con la importación de Bitwarden:
 uv run python -m ddgo_backup --format 1password -o 1password_import.csv
 ```
 
-| Columna | Descripción |
-|---------|-------------|
-| `title` | Título del item |
-| `website` | URL completa |
-| `username` | Usuario |
-| `password` | Contraseña |
-| `notes` | Notas |
+| Column | Description |
+|--------|-------------|
+| `title` | Item title |
+| `website` | Full URL |
+| `username` | Username |
+| `password` | Password |
+| `notes` | Notes |
 
-**Cómo importar en 1Password:**
-1. Abre 1Password
-2. Ve a File → Import → CSV
-3. Selecciona el archivo generado
+**How to import in 1Password:**
+1. Open 1Password
+2. Go to File → Import → CSV
+3. Select the generated file
 
 ---
 
@@ -449,20 +449,20 @@ uv run python -m ddgo_backup --format 1password -o 1password_import.csv
 uv run python -m ddgo_backup --format protonpass -o protonpass_import.csv
 ```
 
-| Columna | Descripción |
-|---------|-------------|
-| `name` | Nombre del item |
-| `url` | URL completa con https:// |
-| `username` | Usuario |
-| `password` | Contraseña |
-| `note` | Notas |
-| `totp` | Código 2FA (vacío) |
+| Column | Description |
+|--------|-------------|
+| `name` | Item name |
+| `url` | Full URL with https:// |
+| `username` | Username |
+| `password` | Password |
+| `note` | Notes |
+| `totp` | 2FA code (empty) |
 
-**Cómo importar en ProtonPass:**
-1. Abre ProtonPass
-2. Ve a Settings → Import
-3. Selecciona "Import from CSV"
-4. Sube el archivo generado
+**How to import in ProtonPass:**
+1. Open ProtonPass
+2. Go to Settings → Import
+3. Select "Import from CSV"
+4. Upload the generated file
 
 ---
 
@@ -472,19 +472,19 @@ uv run python -m ddgo_backup --format protonpass -o protonpass_import.csv
 uv run python -m ddgo_backup --format nordpass -o nordpass_import.csv
 ```
 
-| Columna | Descripción |
-|---------|-------------|
-| `name` | Nombre del item |
-| `url` | URL completa |
-| `username` | Usuario |
-| `password` | Contraseña |
-| `note` | Notas |
+| Column | Description |
+|--------|-------------|
+| `name` | Item name |
+| `url` | Full URL |
+| `username` | Username |
+| `password` | Password |
+| `note` | Notes |
 
-**Cómo importar en NordPass:**
-1. Abre NordPass
-2. Ve a Settings → Import Items
-3. Selecciona "CSV file"
-4. Sube el archivo generado
+**How to import in NordPass:**
+1. Open NordPass
+2. Go to Settings → Import Items
+3. Select "CSV file"
+4. Upload the generated file
 
 ---
 
@@ -494,20 +494,20 @@ uv run python -m ddgo_backup --format nordpass -o nordpass_import.csv
 uv run python -m ddgo_backup --format roboform -o roboform_import.csv
 ```
 
-| Columna | Descripción |
-|---------|-------------|
-| `Name` | Nombre del item |
-| `Url` | URL del sitio |
-| `MatchUrl` | URL para matching |
-| `Login` | Usuario |
-| `Pwd` | Contraseña |
-| `Note` | Notas |
+| Column | Description |
+|--------|-------------|
+| `Name` | Item name |
+| `Url` | Site URL |
+| `MatchUrl` | URL for matching |
+| `Login` | Username |
+| `Pwd` | Password |
+| `Note` | Notes |
 
-**Cómo importar en RoboForm:**
-1. Abre RoboForm
-2. Ve a RoboForm → Import
-3. Selecciona "CSV File"
-4. Sube el archivo generado
+**How to import in RoboForm:**
+1. Open RoboForm
+2. Go to RoboForm → Import
+3. Select "CSV File"
+4. Upload the generated file
 
 ---
 
@@ -517,44 +517,44 @@ uv run python -m ddgo_backup --format roboform -o roboform_import.csv
 uv run python -m ddgo_backup --format keeper -o keeper_import.csv
 ```
 
-| Columna | Descripción |
-|---------|-------------|
-| `Folder` | Carpeta destino |
-| `Title` | Título del item |
-| `Login` | Usuario |
-| `Password` | Contraseña |
-| `Website Address` | URL completa |
-| `Notes` | Notas |
+| Column | Description |
+|--------|-------------|
+| `Folder` | Destination folder |
+| `Title` | Item title |
+| `Login` | Username |
+| `Password` | Password |
+| `Website Address` | Full URL |
+| `Notes` | Notes |
 
-**Cómo importar en Keeper:**
-1. Abre Keeper Web Vault
-2. Ve a Settings → Import
-3. Selecciona "CSV File"
-4. Sube el archivo generado
+**How to import in Keeper:**
+1. Open Keeper Web Vault
+2. Go to Settings → Import
+3. Select "CSV File"
+4. Upload the generated file
 
-> 📁 Todas las contraseñas se importan en la carpeta "DuckDuckGo Import"
+> All passwords are imported into the "DuckDuckGo Import" folder
 
 ---
 
-## 🔧 Arquitectura Técnica
+## Technical Architecture
 
-### Flujo de Datos
+### Data Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     RECOVERY CODE (del PDF)                         │
+│                     RECOVERY CODE (from PDF)                         │
 │         eyJyZWNvdmVyeSI6eyJwcmltYXJ5X2tleSI6Ii4uLiJ9fQ==           │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    1. DECODIFICAR BASE64                            │
+│                    1. DECODE BASE64                                  │
 │   {"recovery": {"primary_key": "xxx", "user_id": "yyy"}}           │
 └─────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                 2. DERIVAR CLAVES (BLAKE2b KDF)                     │
+│                 2. DERIVE KEYS (BLAKE2b KDF)                         │
 │                                                                     │
 │   primary_key ──┬──► password_hash (context: "Password")           │
 │                 └──► stretched_primary_key (context: "Stretchy")   │
@@ -562,7 +562,7 @@ uv run python -m ddgo_backup --format keeper -o keeper_import.csv
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    3. LOGIN EN API DE SYNC                          │
+│                    3. LOGIN TO SYNC API                              │
 │                                                                     │
 │   POST https://sync.duckduckgo.com/sync/login                      │
 │   Body: {user_id, hashed_password, device_id, device_name}         │
@@ -572,7 +572,7 @@ uv run python -m ddgo_backup --format keeper -o keeper_import.csv
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│              4. DESCIFRAR SECRET KEY (XSalsa20-Poly1305)           │
+│              4. DECRYPT SECRET KEY (XSalsa20-Poly1305)              │
 │                                                                     │
 │   protected_encryption_key + stretched_primary_key                 │
 │                         │                                           │
@@ -582,7 +582,7 @@ uv run python -m ddgo_backup --format keeper -o keeper_import.csv
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                  5. OBTENER CREDENCIALES CIFRADAS                   │
+│                  5. FETCH ENCRYPTED CREDENTIALS                      │
 │                                                                     │
 │   GET https://sync.duckduckgo.com/sync/credentials                 │
 │   Header: Authorization: Bearer {token}                            │
@@ -592,9 +592,9 @@ uv run python -m ddgo_backup --format keeper -o keeper_import.csv
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│            6. DESCIFRAR CADA CAMPO (XSalsa20-Poly1305)             │
+│            6. DECRYPT EACH FIELD (XSalsa20-Poly1305)                │
 │                                                                     │
-│   Para cada credencial:                                            │
+│   For each credential:                                              │
 │     domain   = decrypt(encrypted_domain, secret_key)               │
 │     username = decrypt(encrypted_username, secret_key)             │
 │     password = decrypt(encrypted_password, secret_key)             │
@@ -603,101 +603,101 @@ uv run python -m ddgo_backup --format keeper -o keeper_import.csv
                                     │
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      7. EXPORTAR A ARCHIVO                          │
+│                      7. EXPORT TO FILE                               │
 │                                                                     │
 │   CSV / JSON / Bitwarden / 1Password / ProtonPass / etc.           │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Algoritmos Criptográficos
+### Cryptographic Algorithms
 
-| Operación | Algoritmo | Librería |
-|-----------|-----------|----------|
-| Derivación de claves | BLAKE2b con salt/personal | PyNaCl |
-| Cifrado simétrico | XSalsa20-Poly1305 | PyNaCl |
-| Formato de nonce | 24 bytes al final del ciphertext | - |
+| Operation | Algorithm | Library |
+|-----------|-----------|---------|
+| Key derivation | BLAKE2b with salt/personal | PyNaCl |
+| Symmetric encryption | XSalsa20-Poly1305 | PyNaCl |
+| Nonce format | 24 bytes at the end of ciphertext | - |
 
-### Estructura del Proyecto
+### Project Structure
 
 ```
 ddgo-backup/
 ├── src/
 │   └── ddgo_backup/
-│       ├── __init__.py      # Metadata del paquete
-│       ├── __main__.py      # Entry point para python -m
-│       ├── main.py          # CLI con argparse
-│       ├── crypto.py        # Criptografía (KDF, XSalsa20)
-│       ├── api.py           # Cliente HTTP para sync API
-│       ├── models.py        # Modelos Pydantic
-│       └── exporter.py      # Exportadores (CSV, JSON, etc.)
-├── pyproject.toml           # Configuración del proyecto
-├── README.md                # Esta documentación
-└── run.sh                   # Script de ejecución rápida
+│       ├── __init__.py      # Package metadata
+│       ├── __main__.py      # Entry point for python -m
+│       ├── main.py          # CLI with argparse
+│       ├── crypto.py        # Cryptography (KDF, XSalsa20)
+│       ├── api.py           # HTTP client for sync API
+│       ├── models.py        # Pydantic models
+│       └── exporter.py      # Exporters (CSV, JSON, etc.)
+├── pyproject.toml           # Project configuration
+├── README.md                # This documentation
+└── run.sh                   # Quick run script
 ```
 
 ---
 
-## 🔒 Seguridad
+## Security
 
-### ✅ Lo que esta herramienta hace bien
+### What This Tool Does Well
 
-| Aspecto | Implementación |
-|---------|----------------|
-| **Descifrado local** | Tus contraseñas se descifran en tu computadora, no en ningún servidor |
-| **Sin almacenamiento** | La herramienta no guarda tu Recovery Code ni credenciales |
-| **Criptografía estándar** | Usa PyNaCl (bindings de libsodium), la misma librería que usa DuckDuckGo |
-| **Código abierto** | Puedes auditar exactamente qué hace el código |
+| Aspect | Implementation |
+|--------|----------------|
+| **Local decryption** | Your passwords are decrypted on your computer, not on any server |
+| **No storage** | The tool doesn't save your Recovery Code or credentials |
+| **Standard cryptography** | Uses PyNaCl (libsodium bindings), the same library DuckDuckGo uses |
+| **Open source** | You can audit exactly what the code does |
 
-### ⚠️ Advertencias de seguridad
+### Security Warnings
 
-| Riesgo | Mitigación |
-|--------|------------|
-| **El archivo exportado contiene contraseñas en texto plano** | Elimínalo inmediatamente después de importar a tu nuevo gestor |
-| **El Recovery Code es tu clave maestra** | No lo compartas con nadie. Considera regenerarlo después de usar esta herramienta |
-| **El código se muestra en pantalla** | Usa `--code` en lugar del modo interactivo si te preocupa |
+| Risk | Mitigation |
+|------|------------|
+| **The exported file contains passwords in plain text** | Delete it immediately after importing to your new manager |
+| **The Recovery Code is your master key** | Don't share it with anyone. Consider regenerating it after using this tool |
+| **The code is shown on screen** | Use `--code` instead of interactive mode if you're concerned |
 
-### 🔐 Buenas prácticas
+### Best Practices
 
 ```bash
-# 1. Exportar las contraseñas
+# 1. Export passwords
 uv run python -m ddgo_backup -o passwords.csv
 
-# 2. Importar al nuevo gestor de contraseñas
-# (sigue las instrucciones del gestor)
+# 2. Import to new password manager
+# (follow the manager's instructions)
 
-# 3. ELIMINAR el archivo inmediatamente
+# 3. DELETE the file immediately
 rm passwords.csv
 
-# 4. Verificar que se eliminó
-ls -la passwords.csv  # Debe dar error "No such file"
+# 4. Verify it's deleted
+ls -la passwords.csv  # Should show "No such file"
 ```
 
 ---
 
-## 🛠️ Desarrollo
+## Development
 
-Esta sección describe cómo contribuir al proyecto, ejecutar tests y verificar la calidad del código.
+This section describes how to contribute to the project, run tests, and verify code quality.
 
-### Requisitos de Desarrollo
+### Development Requirements
 
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone https://github.com/vdirienzo/ddgo-backup.git
 cd ddgo-backup
 
-# Instalar dependencias incluyendo dev
+# Install dependencies including dev
 uv sync --all-extras
 ```
 
 ### Tests
 
-El proyecto tiene una suite completa de tests con **96% de cobertura**:
+The project has a complete test suite with **96% coverage**:
 
 ```
 tests/
-├── conftest.py                    # 15 fixtures reutilizables
+├── conftest.py                    # 15 reusable fixtures
 ├── integration/
-│   └── test_e2e.py                # 12 tests E2E
+│   └── test_e2e.py                # 12 E2E tests
 └── unit/
     ├── test_crypto.py             # 36 tests (99% cov)
     ├── test_exporter.py           # 36 tests (100% cov)
@@ -705,31 +705,31 @@ tests/
     └── test_main.py               # 24 tests (96% cov)
 ```
 
-#### Ejecutar Tests
+#### Running Tests
 
 ```bash
-# Todos los tests
+# All tests
 uv run pytest
 
-# Con cobertura
+# With coverage
 uv run pytest --cov=ddgo_backup --cov-report=term-missing
 
-# Solo unit tests
+# Unit tests only
 uv run pytest tests/unit/
 
-# Solo integration tests
+# Integration tests only
 uv run pytest tests/integration/
 
-# Tests específicos
+# Specific tests
 uv run pytest -k "test_crypto"
 
-# Modo verbose
+# Verbose mode
 uv run pytest -v
 ```
 
-#### Cobertura por Módulo
+#### Coverage by Module
 
-| Módulo | Statements | Coverage |
+| Module | Statements | Coverage |
 |--------|------------|----------|
 | `crypto.py` | 104 | 99% |
 | `exporter.py` | 128 | 100% |
@@ -738,185 +738,185 @@ uv run pytest -v
 | `models.py` | 31 | 97% |
 | **Total** | **448** | **96%** |
 
-### Calidad de Código
+### Code Quality
 
-El proyecto usa herramientas de última generación para mantener la calidad:
+The project uses state-of-the-art tools to maintain quality:
 
 ```bash
-# Linting con Ruff
+# Linting with Ruff
 uv run ruff check src/
 
-# Formateo con Ruff
+# Formatting with Ruff
 uv run ruff format src/
 
-# Type checking con Mypy
+# Type checking with Mypy
 uv run mypy src/ --ignore-missing-imports
 
-# Verificar todo
+# Verify all
 uv run ruff check src/ && uv run ruff format --check src/ && uv run mypy src/
 ```
 
-### Auditoría de Seguridad
+### Security Audit
 
-El código ha sido auditado con múltiples herramientas de seguridad:
+The code has been audited with multiple security tools:
 
-| Herramienta | Propósito | Resultado |
-|-------------|-----------|-----------|
-| **Bandit** | Security linting Python | ✅ 0 issues |
-| **Semgrep** | SAST (Static Analysis) | ✅ 0 findings |
-| **Safety** | Vulnerabilidades en deps | ✅ 0 CVEs |
+| Tool | Purpose | Result |
+|------|---------|--------|
+| **Bandit** | Python security linting | 0 issues |
+| **Semgrep** | SAST (Static Analysis) | 0 findings |
+| **Safety** | Dependency vulnerabilities | 0 CVEs |
 
 ```bash
-# Ejecutar auditoría de seguridad
+# Run security audit
 uv run bandit -r src/
 
-# Verificar dependencias
+# Check dependencies
 uv run safety check
 ```
 
-### Dependencias de Desarrollo
+### Development Dependencies
 
-| Paquete | Versión | Propósito |
-|---------|---------|-----------|
-| `pytest` | ≥8.0 | Framework de testing |
-| `pytest-cov` | ≥4.0 | Cobertura de código |
-| `respx` | ≥0.20 | HTTP mocking para httpx |
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `pytest` | ≥8.0 | Testing framework |
+| `pytest-cov` | ≥4.0 | Code coverage |
+| `respx` | ≥0.20 | HTTP mocking for httpx |
 | `ruff` | ≥0.1 | Linting + formatting |
 | `mypy` | ≥1.0 | Type checking |
 | `bandit` | ≥1.7 | Security linting |
 | `safety` | ≥2.0 | Dependency audit |
 
-### Flujo de Contribución
+### Contribution Workflow
 
-1. **Fork** el repositorio
-2. **Crea una rama** para tu feature: `git checkout -b feature/mi-feature`
-3. **Escribe tests** para tu código
-4. **Verifica calidad**: `uv run ruff check && uv run mypy src/`
-5. **Ejecuta tests**: `uv run pytest`
-6. **Commit** con mensaje descriptivo
-7. **Push** y crea un **Pull Request**
+1. **Fork** the repository
+2. **Create a branch** for your feature: `git checkout -b feature/my-feature`
+3. **Write tests** for your code
+4. **Verify quality**: `uv run ruff check && uv run mypy src/`
+5. **Run tests**: `uv run pytest`
+6. **Commit** with descriptive message
+7. **Push** and create a **Pull Request**
 
 ---
 
-## ❓ Solución de Problemas
+## Troubleshooting
 
-### Error: "Recovery code inválido"
+### Error: "Invalid recovery code"
 
-**Causa**: El código no se copió completamente o tiene caracteres extra.
+**Cause**: The code wasn't copied completely or has extra characters.
 
-**Solución**:
-1. Asegúrate de copiar TODO el código del PDF
-2. El código puede tener 3-4 líneas, eso está bien
-3. Presiona ENTER en una línea vacía después de pegar
+**Solution**:
+1. Make sure to copy the ENTIRE code from the PDF
+2. The code can have 3-4 lines, that's fine
+3. Press ENTER on an empty line after pasting
 
 ```bash
-# Prueba con modo verbose para más información
+# Try with verbose mode for more information
 uv run python -m ddgo_backup -v
 ```
 
-### Error: "Error de login: 401"
+### Error: "Login error: 401"
 
-**Causa**: Credenciales inválidas.
+**Cause**: Invalid credentials.
 
-**Solución**:
-1. Verifica que el Recovery Code sea correcto
-2. Asegúrate de que tu cuenta de Sync esté activa en el teléfono
-3. Intenta regenerar el Recovery Code desde la app
+**Solution**:
+1. Verify the Recovery Code is correct
+2. Make sure your Sync account is active on the phone
+3. Try regenerating the Recovery Code from the app
 
-### Error: "Connection refused" o timeout
+### Error: "Connection refused" or timeout
 
-**Causa**: Problema de red o servidor.
+**Cause**: Network or server problem.
 
-**Solución**:
-1. Verifica tu conexión a internet
-2. Intenta de nuevo en unos minutos
-3. Los servidores de DuckDuckGo pueden estar temporalmente no disponibles
+**Solution**:
+1. Check your internet connection
+2. Try again in a few minutes
+3. DuckDuckGo servers may be temporarily unavailable
 
-### Las contraseñas aparecen cifradas en el CSV
+### Passwords appear encrypted in CSV
 
-**Causa**: Error al descifrar con la secret key.
+**Cause**: Error decrypting with the secret key.
 
-**Solución**:
-1. Verifica que el Recovery Code sea completo
-2. Intenta regenerar el Recovery Code desde la app
-3. Ejecuta con `-v` para ver más detalles del error
+**Solution**:
+1. Verify the Recovery Code is complete
+2. Try regenerating the Recovery Code from the app
+3. Run with `-v` to see more error details
 
-### No tengo Sync & Backup en mi app
+### I don't have Sync & Backup in my app
 
-**Causa**: Feature no disponible o desactivada.
+**Cause**: Feature not available or disabled.
 
-**Solución**:
-1. Actualiza DuckDuckGo a la última versión
-2. Sync & Backup debe activarse manualmente en Settings
-3. Necesitas crear o unirte a un grupo de sincronización
+**Solution**:
+1. Update DuckDuckGo to the latest version
+2. Sync & Backup must be manually enabled in Settings
+3. You need to create or join a sync group
 
 ---
 
-## 📝 Changelog
+## Changelog
 
 ### [1.2.0] - 2026-01-18
 
 #### Added
-- Suite completa de tests con **127 tests** y **96% de cobertura**
-  - Unit tests para crypto.py (36 tests, 99% cov)
-  - Unit tests para exporter.py (36 tests, 100% cov)
-  - Unit tests para api.py (19 tests, 89% cov)
-  - Unit tests para main.py (24 tests, 96% cov)
-  - Integration tests E2E (12 tests)
-- Auditoría de seguridad completa:
-  - Ruff: linting y formateo
-  - Mypy: verificación de tipos estáticos
+- Complete test suite with **127 tests** and **96% coverage**
+  - Unit tests for crypto.py (36 tests, 99% cov)
+  - Unit tests for exporter.py (36 tests, 100% cov)
+  - Unit tests for api.py (19 tests, 89% cov)
+  - Unit tests for main.py (24 tests, 96% cov)
+  - E2E integration tests (12 tests)
+- Complete security audit:
+  - Ruff: linting and formatting
+  - Mypy: static type checking
   - Bandit: security linting (0 issues)
   - Semgrep: SAST scanning (0 findings)
   - Safety: dependency audit (0 CVEs)
-- Sección de Desarrollo en documentación
-- Badges de tests, cobertura y herramientas de seguridad
+- Development section in documentation
+- Badges for tests, coverage, and security tools
 
 #### Changed
-- Código formateado con Ruff
-- Type hints corregidos para cumplir con Mypy
-- Removidos ejemplos con datos sensibles de la documentación
-- UI mejorada: caja de instrucciones con marco alineado (63 columnas)
-- Removido texto técnico innecesario del prompt de usuario
+- Code formatted with Ruff
+- Type hints corrected for Mypy compliance
+- Removed examples with sensitive data from documentation
+- Improved UI: instruction box with aligned frame (63 columns)
+- Removed unnecessary technical text from user prompt
 
 #### Security
-- Verificación triple de que no hay recovery codes reales en el código
-- .gitignore actualizado para bloquear archivos CSV y JSON exportados
+- Triple verification that no real recovery codes are in the code
+- Updated .gitignore to block exported CSV and JSON files
 
 ### [1.1.0] - 2026-01-18
 
 #### Added
-- Soporte para códigos multilínea del PDF
-- Formatos de exportación: ProtonPass, NordPass, RoboForm, Keeper
-- Mejor manejo de errores con mensajes descriptivos
+- Support for multiline codes from PDF
+- Export formats: ProtonPass, NordPass, RoboForm, Keeper
+- Better error handling with descriptive messages
 
 #### Changed
-- El modo interactivo ahora acepta múltiples líneas (ENTER vacío para terminar)
-- Mejorada la limpieza del Recovery Code (elimina espacios, saltos de línea, etc.)
+- Interactive mode now accepts multiple lines (empty ENTER to finish)
+- Improved Recovery Code cleaning (removes spaces, line breaks, etc.)
 
 #### Fixed
-- Error al pegar código del PDF con saltos de línea
+- Error when pasting code from PDF with line breaks
 
 ### [1.0.0] - 2026-01-18
 
 #### Added
-- Exportación inicial a CSV, JSON, Bitwarden, 1Password
-- Soporte para Recovery Code de DuckDuckGo
-- Implementación de criptografía compatible (PyNaCl)
-- CLI interactivo
-- Descifrado de todos los campos (domain, username, password, notes)
+- Initial export to CSV, JSON, Bitwarden, 1Password
+- DuckDuckGo Recovery Code support
+- Compatible cryptography implementation (PyNaCl)
+- Interactive CLI
+- Decryption of all fields (domain, username, password, notes)
 
 ---
 
-## 👤 Autor
+## Author
 
 **Homero Thompson del Lago del Terror**
 
 ---
 
-## 📄 Licencia
+## License
 
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ```
 MIT License
@@ -944,18 +944,18 @@ SOFTWARE.
 
 ---
 
-## ⚖️ Disclaimer
+## Disclaimer
 
-Este proyecto **no está afiliado, asociado, autorizado, respaldado por, ni de ninguna manera oficialmente conectado con DuckDuckGo, Inc.**, ni con ninguna de sus subsidiarias o afiliadas.
+This project is **not affiliated, associated, authorized, endorsed by, or in any way officially connected with DuckDuckGo, Inc.**, or any of its subsidiaries or affiliates.
 
-El nombre "DuckDuckGo" así como nombres, marcas, emblemas e imágenes relacionadas son marcas registradas de sus respectivos propietarios.
+The name "DuckDuckGo" as well as related names, marks, emblems, and images are registered trademarks of their respective owners.
 
-**Usa esta herramienta bajo tu propio riesgo.** El autor no se hace responsable por cualquier pérdida de datos, brechas de seguridad, o cualquier otro daño derivado del uso de esta herramienta.
+**Use this tool at your own risk.** The author is not responsible for any data loss, security breaches, or any other damage resulting from the use of this tool.
 
 ---
 
 <div align="center">
 
-**¿Te fue útil? ⭐ Dale una estrella al repositorio**
+**Found it useful? Give the repository a star**
 
 </div>

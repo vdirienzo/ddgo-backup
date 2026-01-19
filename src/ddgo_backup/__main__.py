@@ -1,9 +1,9 @@
 """
-__main__.py - Permite ejecutar el módulo directamente
+__main__.py - Allows running the module directly
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 
-Uso: python -m ddgo_backup
+Usage: python -m ddgo_backup
 """
 
 from .main import main

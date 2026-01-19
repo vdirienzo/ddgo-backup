@@ -1,12 +1,12 @@
 """
-crypto.py - Implementación criptográfica compatible con DDG Sync
+crypto.py - Cryptographic implementation compatible with DDG Sync
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 
-Reimplementa la criptografía de libsodium usada por DuckDuckGo:
-- Argon2i para derivación de password → primaryKey
-- BLAKE2b KDF para derivar stretchedPrimaryKey y passwordHash
-- XSalsa20-Poly1305 para cifrado/descifrado de datos
+Re-implements the libsodium cryptography used by DuckDuckGo:
+- Argon2i for password derivation → primaryKey
+- BLAKE2b KDF to derive stretchedPrimaryKey and passwordHash
+- XSalsa20-Poly1305 for data encryption/decryption
 """
 
 import base64
@@ -22,38 +22,38 @@ from nacl.bindings import (
 )
 from nacl.encoding import RawEncoder
 
-# Constantes de libsodium (mismas que DDGSyncCrypto.h)
+# libsodium constants (same as DDGSyncCrypto.h)
 PRIMARY_KEY_SIZE = 32
 SECRET_KEY_SIZE = 32
 HASH_SIZE = 32
 STRETCHED_PRIMARY_KEY_SIZE = 32
 
-# Parámetros Argon2i INTERACTIVE (no usados en login, solo en creación de cuenta)
+# Argon2i INTERACTIVE parameters (not used in login, only in account creation)
 ARGON2_OPSLIMIT = nacl.bindings.crypto_pwhash_argon2i_OPSLIMIT_INTERACTIVE
 ARGON2_MEMLIMIT = nacl.bindings.crypto_pwhash_argon2i_MEMLIMIT_INTERACTIVE
 ARGON2_ALG = nacl.bindings.crypto_pwhash_ALG_ARGON2I13
 
-# Contextos KDF (exactamente 8 caracteres, se paddean a 16)
+# KDF contexts (exactly 8 characters, padded to 16)
 KDF_CONTEXT_STRETCHED = b"Stretchy"
 KDF_CONTEXT_PASSWORD = b"Password"
 
-# Subkey IDs (según DDGSyncCrypto.c)
+# Subkey IDs (according to DDGSyncCrypto.c)
 SUBKEY_ID_PASSWORD_HASH = 1
 SUBKEY_ID_STRETCHED_PK = 2
 
-# Tamaños de nonce y MAC
+# Nonce and MAC sizes
 NONCE_SIZE = nacl.bindings.crypto_secretbox_NONCEBYTES  # 24 bytes
 MAC_SIZE = nacl.bindings.crypto_secretbox_MACBYTES  # 16 bytes
 SALT_SIZE = nacl.bindings.crypto_pwhash_SALTBYTES  # 16 bytes
 
-# Tamaños para BLAKE2b KDF
+# BLAKE2b KDF sizes
 KDF_SALT_SIZE = nacl.bindings.crypto_generichash_SALTBYTES  # 16 bytes
 KDF_PERSONAL_SIZE = nacl.bindings.crypto_generichash_PERSONALBYTES  # 16 bytes
 
 
 @dataclass
 class LoginKeys:
-    """Claves derivadas para login."""
+    """Derived keys for login."""
 
     password_hash: bytes
     stretched_primary_key: bytes
@@ -62,7 +62,7 @@ class LoginKeys:
 
 @dataclass
 class DecryptedCredential:
-    """Credencial descifrada."""
+    """Decrypted credential."""
 
     domain: str
     username: str
@@ -78,32 +78,32 @@ def _kdf_derive_from_key(
     key: bytes,
 ) -> bytes:
     """
-    Reimplementa crypto_kdf_derive_from_key de libsodium.
+    Re-implements crypto_kdf_derive_from_key from libsodium.
 
-    Usa BLAKE2b con:
-    - Salt: subkey_id como uint64 LE + 8 bytes de zeros (16 bytes total)
-    - Personal: context padded con zeros hasta 16 bytes
+    Uses BLAKE2b with:
+    - Salt: subkey_id as uint64 LE + 8 bytes of zeros (16 bytes total)
+    - Personal: context padded with zeros to 16 bytes
 
     Args:
-        subkey_size: Tamaño de la subclave a derivar (16-64 bytes)
-        subkey_id: ID numérico de la subclave
-        context: Contexto de 8 bytes
-        key: Clave maestra de 32 bytes
+        subkey_size: Size of the subkey to derive (16-64 bytes)
+        subkey_id: Numeric ID of the subkey
+        context: 8-byte context
+        key: 32-byte master key
 
     Returns:
-        bytes: Subclave derivada
+        bytes: Derived subkey
     """
     if len(context) > KDF_PERSONAL_SIZE:
-        raise ValueError(f"Context debe ser <= {KDF_PERSONAL_SIZE} bytes")
+        raise ValueError(f"Context must be <= {KDF_PERSONAL_SIZE} bytes")
 
-    # Construir salt: subkey_id como uint64 LE + padding zeros
+    # Build salt: subkey_id as uint64 LE + padding zeros
     salt = struct.pack("<Q", subkey_id) + b"\x00" * 8  # 8 + 8 = 16 bytes
 
-    # Construir personal: context + padding zeros
+    # Build personal: context + padding zeros
     personal = context.ljust(KDF_PERSONAL_SIZE, b"\x00")
 
-    # BLAKE2b con salt y personal
-    # crypto_generichash_blake2b_salt_personal espera data vacío y key como la master key
+    # BLAKE2b with salt and personal
+    # crypto_generichash_blake2b_salt_personal expects empty data and key as master key
     subkey = crypto_generichash_blake2b_salt_personal(
         data=b"",
         digest_size=subkey_size,
@@ -117,13 +117,13 @@ def _kdf_derive_from_key(
 
 def decode_recovery_code(recovery_code: str) -> tuple[str, str]:
     """
-    Decodifica un Recovery Code de DuckDuckGo.
+    Decode a DuckDuckGo Recovery Code.
 
-    El recovery code es JSON en Base64:
+    The recovery code is JSON encoded in Base64:
     {"recovery": {"primary_key": "xxx", "user_id": "yyy"}}
 
-    NOTA: El PDF de DuckDuckGo muestra el código en múltiples líneas.
-    Esta función limpia automáticamente saltos de línea, espacios, etc.
+    NOTE: The DuckDuckGo PDF shows the code in multiple lines.
+    This function automatically cleans line breaks, spaces, etc.
 
     Returns:
         tuple[str, str]: (primary_key_b64, user_id)
@@ -131,27 +131,27 @@ def decode_recovery_code(recovery_code: str) -> tuple[str, str]:
     import json
     import re
 
-    # Limpiar el código exhaustivamente
-    # El PDF de DDG divide el código en 3-4 líneas, así que hay que limpiarlo bien
+    # Clean the code exhaustively
+    # The DDG PDF splits the code into 3-4 lines, so it needs thorough cleaning
     clean_code = recovery_code
 
-    # Eliminar todos los caracteres de espacio en blanco (espacios, tabs, newlines, etc.)
+    # Remove all whitespace characters (spaces, tabs, newlines, etc.)
     clean_code = re.sub(r"\s+", "", clean_code)
 
-    # Eliminar guiones (por si lo formatearon manualmente)
+    # Remove dashes (in case it was manually formatted)
     clean_code = clean_code.replace("-", "")
 
-    # Eliminar comillas que puedan haber quedado al copiar
+    # Remove quotes that may have been left over when copying
     clean_code = clean_code.replace('"', "").replace("'", "")
 
-    # Intentar decodificar Base64
+    # Try to decode Base64
     try:
         decoded = base64.b64decode(clean_code)
         data = json.loads(decoded)
     except Exception:
-        # Intentar con URL-safe Base64
+        # Try URL-safe Base64
         try:
-            # Agregar padding si es necesario
+            # Add padding if needed
             padding = 4 - (len(clean_code) % 4)
             if padding != 4:
                 clean_code += "=" * padding
@@ -159,44 +159,43 @@ def decode_recovery_code(recovery_code: str) -> tuple[str, str]:
             data = json.loads(decoded)
         except Exception as e:
             raise ValueError(
-                f"Recovery code inválido. Asegúrate de copiar todo el código del PDF.\n"
+                f"Invalid recovery code. Make sure to copy the entire code from the PDF.\n"
                 f"Error: {e}"
             ) from e
 
-    # Extraer campos
+    # Extract fields
     if "recovery" in data:
         recovery = data["recovery"]
         return recovery["primary_key"], recovery["user_id"]
     elif "primary_key" in data:
         return data["primary_key"], data["user_id"]
     else:
-        raise ValueError("Formato de recovery code no reconocido")
+        raise ValueError("Unrecognized recovery code format")
 
 
 def prepare_for_login(primary_key_b64: str) -> LoginKeys:
     """
-    Prepara las claves necesarias para login desde la primaryKey.
+    Prepare the keys needed for login from the primaryKey.
 
-    Replica la función ddgSyncPrepareForLogin de DDGSyncCrypto.c:
-    1. Deriva passwordHash usando KDF con contexto "Password" (subkey_id=1)
-    2. Deriva stretchedPrimaryKey usando KDF con contexto "Stretchy" (subkey_id=2)
+    Replicates the ddgSyncPrepareForLogin function from DDGSyncCrypto.c:
+    1. Derives passwordHash using KDF with context "Password" (subkey_id=1)
+    2. Derives stretchedPrimaryKey using KDF with context "Stretchy" (subkey_id=2)
 
     Args:
-        primary_key_b64: Primary key en Base64
+        primary_key_b64: Primary key in Base64
 
     Returns:
-        LoginKeys con password_hash, stretched_primary_key, y primary_key
+        LoginKeys with password_hash, stretched_primary_key, and primary_key
     """
-    # Decodificar primaryKey
+    # Decode primaryKey
     primary_key = base64.b64decode(primary_key_b64)
 
     if len(primary_key) != PRIMARY_KEY_SIZE:
         raise ValueError(
-            f"Primary key debe ser {PRIMARY_KEY_SIZE} bytes, "
-            f"recibido {len(primary_key)}"
+            f"Primary key must be {PRIMARY_KEY_SIZE} bytes, received {len(primary_key)}"
         )
 
-    # Derivar passwordHash (subkey_id=1, contexto="Password")
+    # Derive passwordHash (subkey_id=1, context="Password")
     password_hash = _kdf_derive_from_key(
         subkey_size=HASH_SIZE,
         subkey_id=SUBKEY_ID_PASSWORD_HASH,
@@ -204,7 +203,7 @@ def prepare_for_login(primary_key_b64: str) -> LoginKeys:
         key=primary_key,
     )
 
-    # Derivar stretchedPrimaryKey (subkey_id=2, contexto="Stretchy")
+    # Derive stretchedPrimaryKey (subkey_id=2, context="Stretchy")
     stretched_pk = _kdf_derive_from_key(
         subkey_size=STRETCHED_PRIMARY_KEY_SIZE,
         subkey_id=SUBKEY_ID_STRETCHED_PK,
@@ -223,26 +222,26 @@ def decrypt_protected_secret_key(
     protected_secret_key_b64: str, stretched_primary_key: bytes
 ) -> bytes:
     """
-    Descifra la secretKey protegida usando stretchedPrimaryKey.
+    Decrypt the protected secretKey using stretchedPrimaryKey.
 
-    El formato es: [ciphertext + MAC][nonce]
-    - MAC: 16 bytes (al final del ciphertext)
-    - Nonce: 24 bytes (al final de todo)
+    The format is: [ciphertext + MAC][nonce]
+    - MAC: 16 bytes (at the end of ciphertext)
+    - Nonce: 24 bytes (at the very end)
 
     Args:
-        protected_secret_key_b64: Protected secret key en Base64
-        stretched_primary_key: Clave para descifrar
+        protected_secret_key_b64: Protected secret key in Base64
+        stretched_primary_key: Key to decrypt with
 
     Returns:
-        bytes: Secret key descifrada (32 bytes)
+        bytes: Decrypted secret key (32 bytes)
     """
     encrypted = base64.b64decode(protected_secret_key_b64)
 
-    # Extraer nonce (últimos 24 bytes)
+    # Extract nonce (last 24 bytes)
     nonce = encrypted[-NONCE_SIZE:]
     ciphertext = encrypted[:-NONCE_SIZE]
 
-    # Descifrar usando XSalsa20-Poly1305
+    # Decrypt using XSalsa20-Poly1305
     try:
         secret_key = crypto_secretbox_open(
             ciphertext=ciphertext,
@@ -250,40 +249,38 @@ def decrypt_protected_secret_key(
             key=stretched_primary_key,
         )
     except Exception as e:
-        raise ValueError(f"Error al descifrar secret key: {e}") from e
+        raise ValueError(f"Error decrypting secret key: {e}") from e
 
     if len(secret_key) != SECRET_KEY_SIZE:
-        raise ValueError(
-            f"Secret key descifrada tiene tamaño incorrecto: {len(secret_key)}"
-        )
+        raise ValueError(f"Decrypted secret key has incorrect size: {len(secret_key)}")
 
     return secret_key
 
 
 def decrypt_data(encrypted_b64: str, secret_key: bytes) -> str:
     """
-    Descifra datos sincronizados usando la secretKey.
+    Decrypt synced data using the secretKey.
 
-    El formato es el mismo que protected_secret_key:
+    The format is the same as protected_secret_key:
     [ciphertext + MAC][nonce]
 
     Args:
-        encrypted_b64: Datos cifrados en Base64
-        secret_key: Clave secreta (32 bytes)
+        encrypted_b64: Encrypted data in Base64
+        secret_key: Secret key (32 bytes)
 
     Returns:
-        str: Datos descifrados como string UTF-8
+        str: Decrypted data as UTF-8 string
     """
     if not encrypted_b64:
         return ""
 
     encrypted = base64.b64decode(encrypted_b64)
 
-    # Extraer nonce (últimos 24 bytes)
+    # Extract nonce (last 24 bytes)
     nonce = encrypted[-NONCE_SIZE:]
     ciphertext = encrypted[:-NONCE_SIZE]
 
-    # Descifrar
+    # Decrypt
     try:
         plaintext = crypto_secretbox_open(
             ciphertext=ciphertext,
@@ -292,30 +289,30 @@ def decrypt_data(encrypted_b64: str, secret_key: bytes) -> str:
         )
         return plaintext.decode("utf-8")
     except Exception as e:
-        raise ValueError(f"Error al descifrar datos: {e}") from e
+        raise ValueError(f"Error decrypting data: {e}") from e
 
 
 def encrypt_data(plaintext: str, secret_key: bytes) -> str:
     """
-    Cifra datos usando la secretKey.
+    Encrypt data using the secretKey.
 
     Args:
-        plaintext: Texto a cifrar
-        secret_key: Clave secreta (32 bytes)
+        plaintext: Text to encrypt
+        secret_key: Secret key (32 bytes)
 
     Returns:
-        str: Datos cifrados en Base64
+        str: Encrypted data in Base64
     """
-    # Generar nonce aleatorio
+    # Generate random nonce
     nonce = nacl.utils.random(NONCE_SIZE)
 
-    # Cifrar usando XSalsa20-Poly1305
+    # Encrypt using XSalsa20-Poly1305
     box = nacl.secret.SecretBox(secret_key)
     ciphertext = box.encrypt(plaintext.encode("utf-8"), nonce, encoder=RawEncoder)
 
-    # El formato de PyNaCl ya incluye nonce al inicio, pero DDG lo pone al final
-    # ciphertext de PyNaCl = nonce + ciphertext_real
-    # Necesitamos: ciphertext_real + nonce
+    # PyNaCl format already includes nonce at the beginning, but DDG puts it at the end
+    # PyNaCl ciphertext = nonce + actual_ciphertext
+    # We need: actual_ciphertext + nonce
     actual_ciphertext = ciphertext[NONCE_SIZE:]
     result = actual_ciphertext + nonce
 

@@ -1,14 +1,14 @@
 """
-models.py - Modelos de datos para la API de DuckDuckGo Sync
+models.py - Data models for the DuckDuckGo Sync API
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 """
 
 from pydantic import BaseModel, Field
 
 
 class Device(BaseModel):
-    """Dispositivo registrado en la cuenta."""
+    """Device registered in the account."""
 
     id: str
     name: str
@@ -16,7 +16,7 @@ class Device(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    """Respuesta del endpoint /sync/login."""
+    """Response from the /sync/login endpoint."""
 
     token: str
     protected_encryption_key: str
@@ -24,32 +24,32 @@ class LoginResponse(BaseModel):
 
 
 class CredentialEntry(BaseModel):
-    """Entrada de credencial sincronizada (formato del servidor)."""
+    """Synced credential entry (server format)."""
 
     id: str
     domain: str | None = None
     username: str | None = None
-    password: str | None = None  # Cifrado
-    notes: str | None = None  # Cifrado
+    password: str | None = None  # Encrypted
+    notes: str | None = None  # Encrypted
     title: str | None = None
     last_modified: str | None = None
 
 
 class CredentialsResponse(BaseModel):
-    """Respuesta del endpoint /sync/credentials."""
+    """Response from the /sync/credentials endpoint."""
 
-    credentials: dict  # Estructura JSON variable
+    credentials: dict  # Variable JSON structure
 
 
 class SyncDataResponse(BaseModel):
-    """Respuesta genérica de sincronización."""
+    """Generic sync response."""
 
     entries: list[dict] = Field(default_factory=list)
     last_modified: str | None = None
 
 
 class DecryptedCredential(BaseModel):
-    """Credencial descifrada lista para exportar."""
+    """Decrypted credential ready for export."""
 
     id: str | None = None
     domain: str
@@ -59,7 +59,7 @@ class DecryptedCredential(BaseModel):
     title: str | None = None
 
     def to_csv_row(self) -> dict[str, str]:
-        """Convierte a fila para CSV."""
+        """Convert to CSV row."""
         return {
             "site": self.domain or "",
             "username": self.username or "",

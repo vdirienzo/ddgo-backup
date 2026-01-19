@@ -1,9 +1,9 @@
 """
-test_e2e.py - Tests de integración end-to-end
+test_e2e.py - End-to-end integration tests
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 
-Tests que verifican el flujo completo de la aplicación:
+Tests that verify the complete application flow:
 Recovery Code → Crypto → API → Export
 """
 
@@ -33,25 +33,25 @@ from ddgo_backup.exporter import (
 
 
 class TestEndToEndCryptoFlow:
-    """Tests del flujo criptográfico completo."""
+    """Tests for complete cryptographic flow."""
 
     def test_recovery_code_to_login_keys_flow(
         self, test_recovery_code: str, test_primary_key_b64: str, test_user_id: str
     ):
         """Test: Recovery code → decode → prepare_for_login → keys."""
-        # Arrange - ya tenemos el recovery code del fixture
+        # Arrange - already have recovery code from fixture
 
-        # Act - Decodificar recovery code
+        # Act - Decode recovery code
         primary_key_b64, user_id = decode_recovery_code(test_recovery_code)
 
-        # Assert - Valores correctos extraídos
+        # Assert - Correct values extracted
         assert primary_key_b64 == test_primary_key_b64
         assert user_id == test_user_id
 
-        # Act - Preparar claves para login
+        # Act - Prepare keys for login
         login_keys = prepare_for_login(primary_key_b64)
 
-        # Assert - Claves derivadas correctamente
+        # Assert - Keys derived correctly
         assert login_keys.password_hash is not None
         assert len(login_keys.password_hash) == 32
         assert login_keys.stretched_primary_key is not None
@@ -62,28 +62,28 @@ class TestEndToEndCryptoFlow:
     def test_multiline_recovery_code_flow(
         self, test_recovery_code_multiline: str, test_user_id: str
     ):
-        """Test: Recovery code multilínea (como del PDF) funciona correctamente."""
-        # Arrange - Recovery code con saltos de línea
+        """Test: Multiline recovery code (like from PDF) works correctly."""
+        # Arrange - Recovery code with line breaks
 
         # Act
         primary_key_b64, user_id = decode_recovery_code(test_recovery_code_multiline)
 
         # Assert
         assert user_id == test_user_id
-        # Debe poder preparar login keys
+        # Should be able to prepare login keys
         login_keys = prepare_for_login(primary_key_b64)
         assert login_keys.password_hash is not None
 
     def test_encrypt_decrypt_roundtrip_flow(self, test_secret_key: bytes):
-        """Test: Datos cifrados pueden ser descifrados correctamente."""
+        """Test: Encrypted data can be decrypted correctly."""
         # Arrange
         test_data = [
             "simple_password",
             "contraseña_con_ñ",
-            "パスワード",  # Japonés
+            "パスワード",  # Japanese
             "🔐🔑💻",  # Emojis
-            "",  # Vacío
-            "a" * 1000,  # Largo
+            "",  # Empty
+            "a" * 1000,  # Long
         ]
 
         for original in test_data:
@@ -94,15 +94,15 @@ class TestEndToEndCryptoFlow:
             decrypted = decrypt_data(encrypted, test_secret_key)
 
             # Assert
-            assert decrypted == original, f"Fallo con: {original[:20]}..."
+            assert decrypted == original, f"Failed with: {original[:20]}..."
 
 
 class TestEndToEndExportFlow:
-    """Tests del flujo de exportación completo."""
+    """Tests for complete export flow."""
 
     @pytest.fixture
     def credentials_list(self) -> list[DecryptedCredential]:
-        """Lista de credenciales para tests E2E."""
+        """Credentials list for E2E tests."""
         return [
             DecryptedCredential(
                 domain="github.com",
@@ -130,7 +130,7 @@ class TestEndToEndExportFlow:
     def test_export_all_formats_creates_valid_files(
         self, credentials_list: list[DecryptedCredential], tmp_path: Path
     ):
-        """Test: Todos los formatos de exportación crean archivos válidos."""
+        """Test: All export formats create valid files."""
         # Arrange
         exporters = [
             ("csv", export_to_csv),
@@ -152,23 +152,23 @@ class TestEndToEndExportFlow:
             result_path = exporter(credentials_list, output_file)
 
             # Assert
-            assert result_path.exists(), f"{format_name}: Archivo no creado"
-            assert result_path.stat().st_size > 0, f"{format_name}: Archivo vacío"
+            assert result_path.exists(), f"{format_name}: File not created"
+            assert result_path.stat().st_size > 0, f"{format_name}: Empty file"
 
-            # Verificar que el contenido es parseable
+            # Verify content is parseable
             content = result_path.read_text(encoding="utf-8")
             if format_name in ["json", "bitwarden"]:
                 data = json.loads(content)
-                assert data is not None, f"{format_name}: JSON inválido"
+                assert data is not None, f"{format_name}: Invalid JSON"
             else:
-                # CSV - verificar que tiene headers y datos
+                # CSV - verify it has headers and data
                 lines = content.strip().split("\n")
-                assert len(lines) >= 2, f"{format_name}: CSV sin datos suficientes"
+                assert len(lines) >= 2, f"{format_name}: CSV without enough data"
 
     def test_csv_contains_all_credentials(
         self, credentials_list: list[DecryptedCredential], tmp_path: Path
     ):
-        """Test: CSV contiene todas las credenciales exportadas."""
+        """Test: CSV contains all exported credentials."""
         # Arrange
         output_file = tmp_path / "credentials.csv"
 
@@ -188,7 +188,7 @@ class TestEndToEndExportFlow:
     def test_bitwarden_format_is_importable(
         self, credentials_list: list[DecryptedCredential], tmp_path: Path
     ):
-        """Test: Formato Bitwarden tiene estructura correcta para importación."""
+        """Test: Bitwarden format has correct structure for import."""
         # Arrange
         output_file = tmp_path / "bitwarden.json"
 
@@ -199,13 +199,13 @@ class TestEndToEndExportFlow:
         with open(output_file, encoding="utf-8") as f:
             data = json.load(f)
 
-        # Verificar estructura Bitwarden
+        # Verify Bitwarden structure
         assert "encrypted" in data
         assert data["encrypted"] is False
         assert "items" in data
         assert len(data["items"]) == 3
 
-        # Verificar estructura de cada item
+        # Verify structure of each item
         for item in data["items"]:
             assert "type" in item
             assert item["type"] == 1  # Login type
@@ -217,7 +217,7 @@ class TestEndToEndExportFlow:
 
 
 class TestEndToEndFullPipeline:
-    """Tests del pipeline completo: Recovery → API → Export."""
+    """Tests for complete pipeline: Recovery → API → Export."""
 
     def test_full_pipeline_with_mocked_api(
         self,
@@ -225,8 +225,8 @@ class TestEndToEndFullPipeline:
         test_secret_key: bytes,
         tmp_path: Path,
     ):
-        """Test: Pipeline completo con API mockeada."""
-        # Arrange - Crear credenciales cifradas
+        """Test: Complete pipeline with mocked API."""
+        # Arrange - Create encrypted credentials
         credentials = [
             {"domain": "test.com", "username": "user1", "password": "pass1"},
             {"domain": "example.org", "username": "user2", "password": "pass2"},
@@ -244,14 +244,14 @@ class TestEndToEndFullPipeline:
                 }
             )
 
-        # Mock de la respuesta de la API
+        # Mock API response
         mock_credentials_response = {"credentials": {"entries": encrypted_entries}}
 
-        # Act - Decodificar recovery code
+        # Act - Decode recovery code
         primary_key_b64, user_id = decode_recovery_code(test_recovery_code)
         login_keys = prepare_for_login(primary_key_b64)
 
-        # Simular el descifrado de credenciales (como lo haría SyncClient)
+        # Simulate credential decryption (as SyncClient would do)
         decrypted_credentials = []
         from ddgo_backup.crypto import decrypt_data
 
@@ -266,11 +266,11 @@ class TestEndToEndFullPipeline:
                 )
             )
 
-        # Exportar a CSV
+        # Export to CSV
         output_file = tmp_path / "export.csv"
         export_to_csv(decrypted_credentials, output_file)
 
-        # Assert - Verificar archivo exportado
+        # Assert - Verify exported file
         assert output_file.exists()
         with open(output_file, encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -285,7 +285,7 @@ class TestEndToEndFullPipeline:
         assert rows[1]["password"] == "pass2"
 
     def test_export_with_special_characters(self, tmp_path: Path):
-        """Test: Exportación maneja caracteres especiales correctamente."""
+        """Test: Export handles special characters correctly."""
         # Arrange
         credentials = [
             DecryptedCredential(
@@ -311,7 +311,7 @@ class TestEndToEndFullPipeline:
         assert "Nötäs con ñ y 日本語" in content
 
     def test_export_empty_credentials_list(self, tmp_path: Path):
-        """Test: Exportación de lista vacía crea archivo con headers."""
+        """Test: Empty list export creates file with headers."""
         # Arrange
         credentials: list[DecryptedCredential] = []
 
@@ -323,31 +323,31 @@ class TestEndToEndFullPipeline:
         assert output_file.exists()
         with open(output_file, encoding="utf-8") as f:
             content = f.read()
-        # Debe tener al menos los headers
+        # Should have at least the headers
         assert "name" in content or "url" in content
 
 
 class TestSecurityValidation:
-    """Tests de validación de seguridad."""
+    """Security validation tests."""
 
     def test_different_nonces_produce_different_ciphertext(
         self, test_secret_key: bytes
     ):
-        """Test: Cifrado usa nonces aleatorios (no determinístico)."""
+        """Test: Encryption uses random nonces (not deterministic)."""
         # Arrange
         plaintext = "same_password"
 
-        # Act - Cifrar el mismo texto múltiples veces
+        # Act - Encrypt same text multiple times
         ciphertexts = set()
         for _ in range(10):
             encrypted = encrypt_data(plaintext, test_secret_key)
             ciphertexts.add(encrypted)
 
-        # Assert - Todos los ciphertexts deben ser diferentes
-        assert len(ciphertexts) == 10, "Cifrado no usa nonces aleatorios!"
+        # Assert - All ciphertexts should be different
+        assert len(ciphertexts) == 10, "Encryption not using random nonces!"
 
     def test_wrong_key_cannot_decrypt(self, test_secret_key: bytes):
-        """Test: Clave incorrecta no puede descifrar datos."""
+        """Test: Incorrect key cannot decrypt data."""
         # Arrange
         plaintext = "secret_data"
         encrypted = encrypt_data(plaintext, test_secret_key)
@@ -356,12 +356,12 @@ class TestSecurityValidation:
         # Act & Assert
         from ddgo_backup.crypto import decrypt_data
 
-        with pytest.raises(ValueError, match="Error al descifrar"):
+        with pytest.raises(ValueError, match="Error decrypting"):
             decrypt_data(encrypted, wrong_key)
 
     def test_recovery_code_contains_required_fields(self):
-        """Test: Recovery code inválido sin campos requeridos falla."""
-        # Arrange - Recovery code sin user_id
+        """Test: Invalid recovery code without required fields fails."""
+        # Arrange - Recovery code without user_id
         invalid_data = {"recovery": {"primary_key": "dGVzdA=="}}
         invalid_code = base64.b64encode(json.dumps(invalid_data).encode()).decode()
 

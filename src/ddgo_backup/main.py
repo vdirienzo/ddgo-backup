@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-main.py - CLI principal de DDG Backup
+main.py - Main CLI for DDG Backup
 
-Autor: Homero Thompson del Lago del Terror
+Author: Homero Thompson del Lago del Terror
 
-Uso:
+Usage:
     python -m ddgo_backup
     python -m ddgo_backup --format bitwarden
     python -m ddgo_backup --output passwords.csv
@@ -31,7 +31,7 @@ from .exporter import (
 
 
 def setup_logging(verbose: bool = False):
-    """Configura el logging."""
+    """Configure logging."""
     logger.remove()
     level = "DEBUG" if verbose else "INFO"
     logger.add(
@@ -42,32 +42,30 @@ def setup_logging(verbose: bool = False):
 
 
 def get_recovery_code() -> str:
-    """Solicita el recovery code al usuario."""
+    """Request the recovery code from the user."""
     print("\n" + "=" * 60)
     print("  DuckDuckGo Password Backup Tool")
     print("=" * 60)
-    print("\nPara exportar tus contraseñas necesitas tu Recovery Code.")
-    print("Lo puedes encontrar en: DDG App → Settings → Sync & Backup")
+    print("\nTo export your passwords you need your Recovery Code.")
+    print("You can find it in: DDG App -> Settings -> Sync & Backup")
     print("")
-    print("┌─────────────────────────────────────────────────────────────┐")
-    print("│  IMPORTANTE: El código del PDF viene en VARIAS LÍNEAS       │")
-    print("│                                                             │")
-    print("│  1. Pega TODO el código (puede ser 3-4 líneas)              │")
-    print("│  2. Presiona ENTER                                          │")
-    print("│  3. Presiona ENTER de nuevo (línea vacía) para continuar    │")
-    print("│                                                             │")
-    print("│  >>> ENTER + ENTER (vacío) = CONTINUAR <<<                  │")
-    print("└─────────────────────────────────────────────────────────────┘")
+    print("+" + "-" * 61 + "+")
+    print("|  IMPORTANT: The code from the PDF comes in MULTIPLE LINES   |")
+    print("|                                                             |")
+    print("|  1. Paste the ENTIRE code (can be 3-4 lines)                |")
+    print("|  2. Press ENTER                                             |")
+    print("|  3. Press ENTER again (empty line) to continue              |")
+    print("+" + "-" * 61 + "+")
     print("")
 
-    # Leer múltiples líneas hasta línea vacía
-    # (el PDF de DDG divide el código en 3-4 líneas)
-    print("Recovery Code (pega y luego ENTER vacío):")
+    # Read multiple lines until empty line
+    # (DDG PDF splits the code into 3-4 lines)
+    print("Recovery Code (paste then empty ENTER):")
     lines = []
     while True:
         try:
             line = input()
-            if not line:  # Línea vacía = fin de entrada
+            if not line:  # Empty line = end of input
                 break
             lines.append(line)
         except EOFError:
@@ -78,18 +76,18 @@ def get_recovery_code() -> str:
 
 
 def main():
-    """Punto de entrada principal."""
+    """Main entry point."""
     parser = argparse.ArgumentParser(
-        description="Exporta contraseñas de DuckDuckGo a CSV",
+        description="Export DuckDuckGo passwords to CSV",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Ejemplos:
-  %(prog)s                          # Exporta a CSV (formato por defecto)
-  %(prog)s --format json            # Exporta a JSON
-  %(prog)s --format bitwarden       # Formato compatible con Bitwarden
-  %(prog)s --format 1password       # Formato compatible con 1Password
-  %(prog)s -o passwords.csv         # Especifica archivo de salida
-  %(prog)s --code "eyJyZWNvdmVyeSI..." # Pasa el recovery code directamente
+Examples:
+  %(prog)s                          # Export to CSV (default format)
+  %(prog)s --format json            # Export to JSON
+  %(prog)s --format bitwarden       # Bitwarden-compatible format
+  %(prog)s --format 1password       # 1Password-compatible format
+  %(prog)s -o passwords.csv         # Specify output file
+  %(prog)s --code "eyJyZWNvdmVyeSI..." # Pass recovery code directly
         """,
     )
 
@@ -97,7 +95,7 @@ Ejemplos:
         "-o",
         "--output",
         type=Path,
-        help="Archivo de salida (por defecto: ddg_passwords_TIMESTAMP.csv)",
+        help="Output file (default: ddg_passwords_TIMESTAMP.csv)",
     )
 
     parser.add_argument(
@@ -114,52 +112,52 @@ Ejemplos:
             "keeper",
         ],
         default="csv",
-        help="Formato de exportación (default: csv)",
+        help="Export format (default: csv)",
     )
 
     parser.add_argument(
         "--code",
         type=str,
-        help="Recovery code (si no se especifica, se solicita interactivamente)",
+        help="Recovery code (if not specified, will be requested interactively)",
     )
 
     parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
-        help="Mostrar información de depuración",
+        help="Show debug information",
     )
 
     args = parser.parse_args()
     setup_logging(args.verbose)
 
     try:
-        # Obtener recovery code
+        # Get recovery code
         recovery_code = args.code or get_recovery_code()
 
         if not recovery_code:
-            logger.error("Recovery code es requerido")
+            logger.error("Recovery code is required")
             sys.exit(1)
 
-        # Decodificar recovery code
-        logger.info("Decodificando recovery code...")
+        # Decode recovery code
+        logger.info("Decoding recovery code...")
         primary_key, user_id = decode_recovery_code(recovery_code)
         logger.debug(f"User ID: {user_id[:8]}...")
 
-        # Preparar claves para login
-        logger.info("Derivando claves de autenticación...")
+        # Prepare keys for login
+        logger.info("Deriving authentication keys...")
         login_keys = prepare_for_login(primary_key)
 
-        # Conectar y obtener credenciales
+        # Connect and get credentials
         with SyncClient(user_id=user_id, login_keys=login_keys) as client:
             client.login()
             credentials = client.fetch_credentials()
 
         if not credentials:
-            logger.warning("No se encontraron credenciales para exportar")
+            logger.warning("No credentials found to export")
             sys.exit(0)
 
-        # Exportar según formato
+        # Export according to format
         exporters = {
             "csv": export_to_csv,
             "json": export_to_json,
@@ -174,19 +172,19 @@ Ejemplos:
         exporter = exporters[args.format]
         output_path = exporter(credentials, args.output)
 
-        print(f"\n✅ Exportación completada: {output_path}")
-        print(f"   Total de credenciales: {len(credentials)}")
-        print("\n⚠️  IMPORTANTE: Este archivo contiene tus contraseñas en texto plano.")
-        print("   Guárdalo en un lugar seguro y elimínalo cuando ya no lo necesites.\n")
+        print(f"\n[OK] Export completed: {output_path}")
+        print(f"   Total credentials: {len(credentials)}")
+        print("\n[!] IMPORTANT: This file contains your passwords in plain text.")
+        print("   Store it in a safe place and delete it when no longer needed.\n")
 
     except KeyboardInterrupt:
-        print("\n\nOperación cancelada por el usuario.")
+        print("\n\nOperation cancelled by user.")
         sys.exit(130)
     except ValueError as e:
         logger.error(str(e))
         sys.exit(1)
     except Exception as e:
-        logger.exception(f"Error inesperado: {e}")
+        logger.exception(f"Unexpected error: {e}")
         sys.exit(1)
 
 
