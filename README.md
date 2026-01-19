@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/logo.jpg" alt="DDG Backup Logo" width="180">
+
 # DDG Backup
 
 ### DuckDuckGo Password Export Tool
